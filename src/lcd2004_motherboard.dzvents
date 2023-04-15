@@ -1,0 +1,133 @@
+-- lcd2004_motherboard.dzvents
+-- Switch the PicoW LED1 (of the Breadboard Kit) and display on LCD2004.
+-- The PicoW runs a RESTful webserver.
+-- The HTTP POST request to the PicoW webserver is a JSON object: {"state":"on" or "off"}.
+-- The PicoW webserver HTTP response is a JSON object with key:value pairs: 
+-- {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+-- 20230221 rwbl
+-- Domoticz Log
+--[[
+2023-03-06 10:45:00.310 Status: dzVents: Info: LOG_PICOW_LCDMOTHERBOARD: ------ Start internal script: picow_lcdmotherboard:, trigger: "every minute"
+2023-03-06 10:45:00.334 Status: dzVents: Info: LOG_PICOW_LCDMOTHERBOARD: {["memoryusage"]={["row"]=3, ["text"]="M:20", ["col"]=14}, ["cpuusage"]={["row"]=3, ["text"]="C:0.37", ["col"]=6}, ["timestamp"]={["row"]=1, ["text"]="10:45", ["col"]=15}, ["internaltemperature"]={["row"]=3, ["text"]="T:44", ["col"]=0}}
+2023-03-06 10:45:00.335 Status: dzVents: Info: LOG_PICOW_LCDMOTHERBOARD: ------ Finished picow_lcdmotherboard
+2023-03-06 10:45:00.335 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua 
+]]--
+-- Domoticz
+-- For tests the trigger is an switch type onoff
+local IDX_SWITCH = 16
+--- IDX of the motherboard sensors (devices)
+local IDX_INTERNALTEMPERATURE = 18	-- temperature
+local IDX_ARMCLOCKSPEED = 19		-- sensorValue
+local IDX_V3DCLOCKSPEED = 20		-- sensorValue
+local IDX_CORECLOCKSPEED = 21		-- sensorValue
+local IDX_MEMORYUSAGE = 22			-- percentage
+local IDX_PROCESSUSAGE = 23			-- sensorValue
+local IDX_HDDBOOT = 24				-- percentage
+local IDX_HDD = 25					-- percentage
+local IDX_CPUUSAGE = 26				-- percentage
+-- Round a number with digital places
+local function round(num, numDecimalPlaces)
+  return tonumber(string.format("%." .. (numDecimalPlaces or 0) .. "f", num))
+end
+-- Create table with keys col, row and text to be displayed on the LCD.
+-- For a LCd2004 row 0-3, col 0-19, text length max 20 characters
+-- setText(3,0,'Hello World')
+local function setText(row,col,text)
+    local x = {}
+    x['row']=row
+    x['col']=col
+    x['text']=text
+	return x
+end
+-- Create table with sensor data for LCD display
+-- setSensor(3,5,'T:',round(domoticz.devices(IDX_INTERNALTEMPERATURE).temperature, 2))
+local function setSensor(row,col,pre,data)
+    return setText(row,col,string.format('%s%s', pre, tostring(data)))
+end
+-- {["internaltemperature"]={["col"]=5, ["data"]="T:39.4", ["row"]=3}, ["cpuusage"]=0.68, ["coreclockspeed"]=500, ["v3dclockspeed"]=250, ["processusage"]=45.06, ["armclockspeed"]=600, ["hdd"]=38.19, ["memoryusage"]=20.9, ["hddboot"]=19.68}
+local function getMotherboardData(domoticz)
+    local data = {}
+    -- row=1, col=15, data=HH:MM len=5, range 15+5-1=19
+	data['timestamp'] = setText(1, 15, string.sub(domoticz.time.rawTime, 1, 5))
+    -- row=3, col=0, data=T:NN len=4, range = 0+4-1=3
+    data['internaltemperature'] = setSensor(3, 0, 'T:', round(domoticz.devices(IDX_INTERNALTEMPERATURE).temperature, 0))
+    -- row=3, col=6, data=C:NN.NN len=5, range = 6+5-1=10
+	data['cpuusage']            = setSensor(3, 6, 'C:', round(domoticz.devices(IDX_CPUUSAGE).percentage, 2))
+    -- row=3, col=14, data=M:NN len=4, range = 14+4-1=17
+	data['memoryusage']         = setSensor(3, 14, 'M:', round(domoticz.devices(IDX_MEMORYUSAGE).percentage, 0))
+	
+    --[[
+    data['internaltemperature'] = round(domoticz.devices(IDX_INTERNALTEMPERATURE).temperature, 2)
+	data['armclockspeed']       = round(domoticz.devices(IDX_ARMCLOCKSPEED).sensorValue, 0)
+	data['v3dclockspeed']       = round(domoticz.devices(IDX_V3DCLOCKSPEED).sensorValue, 0)
+	data['coreclockspeed']      = round(domoticz.devices(IDX_CORECLOCKSPEED).sensorValue, 0)
+	data['memoryusage']         = round(domoticz.devices(IDX_MEMORYUSAGE).percentage, 2)
+	data['processusage']        = round(domoticz.devices(IDX_PROCESSUSAGE).sensorValue, 2)
+	data['hddboot']             = round(domoticz.devices(IDX_HDDBOOT).percentage, 2)
+	data['hdd']                 = round(domoticz.devices(IDX_HDD).percentage, 2)
+	data['cpuusage']            = round(domoticz.devices(IDX_CPUUSAGE).percentage, 2)
+    ]]--
+	-- Test embedding json: r=row 0-3, c=col 0-19, d=data
+    --[[
+    local x = {}
+    x['r']=3
+    x['c']=5
+    x['d']=string.format('T:%s', tostring(data['internaltemperature']))
+	data['temp'] = x
+    ]]--
+	domoticz.log(data)
+	return data
+end
+-- URL of the PicoW webserver
+local URL_SERVER      = 'http://webserver-ip'
+local PROJECT         = 'PICOW_LCDMOTHERBOARD'
+local RES_HTTP        = 'RES_' .. PROJECT
+local LOG_MARKER      = 'LOG_' .. PROJECT
+local TIMER_RULE = 'every minute'
+return {
+    -- Listen to switch device changes and HTTP responses
+	on = { devices = { IDX_SWITCH }, timer = { TIMER_RULE }, httpResponses = { RES_HTTP } },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+        if (item.isTimer) then
+            domoticz.openURL({
+                url = URL_SERVER,
+                method = 'POST',
+                headers = { ['content-type'] = 'application/json' },
+                postData = getMotherboardData(domoticz),
+                callback = RES_HTTP,
+               }) 
+        end
+		if (item.isDevice) then
+		    domoticz.log(string.format('Device %s state changed to %s', item.name, item.state), domoticz.LOG_INFO)
+            if (item.state == 'On') then 
+                -- Submit remote HTTP POST request to set the LCD display
+                domoticz.openURL({
+                    url = URL_SERVER,
+                    method = 'POST',
+                    headers = { ['content-type'] = 'application/json' },
+                    postData = getMotherboardData(domoticz),
+                    callback = RES_HTTP,
+                   }) 
+            end
+        end
+        -- Handle HTTP response: OK is item statusCode 200 and item.ok true
+        -- Else error like statusCode 7, item.ok false
+        if (item.isHTTPResponse) then
+            -- domoticz.log(string.format("%d %s", item.statusCode, item.ok))
+            if (item.statusCode == 200) then
+                if (item.isJSON) then
+                    -- {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+                    local data = item.json
+                    domoticz.log(data)
+                    -- domoticz.log(string.format("LED1 status=%s, title=%s, message=%s", data.status, data.title, data.message))
+                end
+            else
+                -- Error like 7 false; ERROR 7:Couldn't connect to server 
+                domoticz.log(string.format("ERROR %d:%s", item.statusCode, item.statusText))
+            end
+        end		
+	end
+}

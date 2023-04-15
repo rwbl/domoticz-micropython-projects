@@ -1,0 +1,36 @@
+--[[
+dht22_customevent.dzvents
+Listen to picow webserver request custom event command and update the temp+hum device temp,hum,hum_stat.
+20230225 rwbl
+Test:
+http://domoticz-ip:port/json.htm?type=command&param=customevent&event=DHT22&data={"t":19,"h":64,"s":0}
+2023-02-24 16:33:03.190 Status: dzVents: Info: Handling Domoticz custom event for: "DHT22"
+2023-02-24 16:33:03.190 Status: dzVents: Info: ------ Start internal script: picow_dht22_customevent: Custom event: "DHT22"
+2023-02-24 16:33:03.191 Status: dzVents: Info: {["isXML"]=false, ["isSystem"]=false, ["customEvent"]="DHT22", ["data"]="{"t":19,"h":64,"s":0}", ["isShellCommandResponse"]=false, ["type"]="customEvent", ["isHTTPResponse"]=false, ["json"]={["h"]=64, ["t"]=19, ["s"]=0}, ["isCustomEvent"]=true, ["message"]="", ["isGroup"]=false, ["isHardware"]=false, ["status"]="info", ["isDevice"]=false, ["trigger"]="DHT22", ["isSecurity"]=false, ["baseType"]="custom", ["dump"]=function, ["isTimer"]=false, ["isScene"]=false, ["isVariable"]=false, ["isJSON"]=true}
+2023-02-24 16:33:03.191 Status: dzVents: Info: {"t":19,"h":64,"s":0}
+2023-02-24 16:33:03.192 Status: dzVents: Info: t=19,h=64,s=0
+2023-02-24 16:33:03.192 Status: dzVents: Info: ------ Finished picow_dht22_customevent 
+]]--
+local IDX_DHT22 = 15
+-- Custom event name as used by the PicoW webserver HTTP API/JSON POST request
+local CUSTOM_EVENT_NAME = 'DHT22'
+return {
+	on = {
+		customEvents = { CUSTOM_EVENT_NAME }
+	},
+	data = {},
+	logging = {},
+	execute = function(domoticz, triggeredItem)
+		if (triggeredItem.isCustomEvent) then
+			domoticz.log(triggeredItem)
+            -- Check the custom event name in case there are more custom events
+		    if (triggeredItem.trigger == CUSTOM_EVENT_NAME) then
+    			domoticz.log(triggeredItem.data)
+    			local data = triggeredItem.json
+    			domoticz.log(string.format('t=%d,h=%d,s=%d', data.t, data.h, data.s))
+    			domoticz.devices(IDX_DHT22).updateTempHum(data.t, data.h, data.s)
+    			-- Take any other action based on temp or hum or hum_stat
+    		end
+		end
+	end
+}

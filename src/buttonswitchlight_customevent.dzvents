@@ -1,0 +1,31 @@
+--[[
+File:   buttonswitchlight_customevent.dzvents
+Date:   20230418
+Author: Robert W.B. Linn
+Handle switch device (idx=16, name=PicoW LED1 Control) state change On or Off triggered by the PicoW webserver submitting HTTP API/JSON requests.
+The HTTP request  submitted from the PicoW to switch On/Off:
+http://domoticz-ip:8080/json.htm?type=command&param=customevent&event=switchlight&data={"idx":16,"state":"On"} or {"idx":16,"state":"Off"}
+]]--
+-- Custom event name as used by the PicoW webserver HTTP API/JSON POST request
+local CUSTOM_EVENT_NAME = 'switchlight'
+return {
+	on = {
+		customEvents = { CUSTOM_EVENT_NAME }
+	},
+	data = {},
+	logging = {},
+	execute = function(domoticz, triggeredItem)
+		if (triggeredItem.isCustomEvent) then
+    		-- domoticz.log(triggeredItem.data)
+            -- Check the custom event name in case there are more custom events
+		    if (triggeredItem.trigger == CUSTOM_EVENT_NAME) then
+                -- Get the JSON object from the triggered item
+    			local data = triggeredItem.json
+                -- Log to check idx and state to be set
+    			domoticz.log(string.format('idx=%d,state=%s', data.idx, data.state))
+    			-- Set the light state
+    			domoticz.devices(data.idx).setState(data.state)
+    		end
+		end
+	end
+}

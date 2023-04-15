@@ -1,0 +1,141 @@
+[
+    {
+        "id": "5e7fdee23c9d653f",
+        "type": "tab",
+        "label": "DMPP",
+        "disabled": false,
+        "info": "domoticz-micropython-projects",
+        "env": []
+    },
+    {
+        "id": "23a82a4e9c805de6",
+        "type": "inject",
+        "z": "5e7fdee23c9d653f",
+        "name": "Set & Trigger HTTP POST Request",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "url",
+                "v": "picow-ip",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"request\":1}",
+        "payloadType": "json",
+        "x": 190,
+        "y": 80,
+        "wires": [
+            [
+                "b88c7ce9a1832e9a"
+            ]
+        ]
+    },
+    {
+        "id": "b88c7ce9a1832e9a",
+        "type": "http request",
+        "z": "5e7fdee23c9d653f",
+        "name": "Send HTTP POST Request",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 180,
+        "y": 140,
+        "wires": [
+            [
+                "17d1f4aaf93e79c5"
+            ]
+        ]
+    },
+    {
+        "id": "7b7b06756ee15219",
+        "type": "debug",
+        "z": "5e7fdee23c9d653f",
+        "name": "LOG DS18B20 ERROR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 490,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "854cb3f9d6670309",
+        "type": "comment",
+        "z": "5e7fdee23c9d653f",
+        "name": "DS18B20_Client_Node-RED",
+        "info": "DS18B20 Get Temperature\n\nSent a HTTP POST request to the Pico W web server.\nThe post data contains a JSON object:\n{\"request\":1} or {\"request\":0}\nSet 1 to ask for data.\n\nThe HTTP response is a JSON object.\nThe key message holds the data from the sensors.\nThe data is a JSON array.\n{\n    \"status\":\"OK\",\n    \"title\":\"{'request': 1}\",\n    \"message\":\n        [\n            {\"id\":1,\"temperature\":22,\"address\":\"28FF5E1804150334\"},\n            {\"id\":2,\"temperature\":17.4375,\"address\":\"28330A9497040373\"}\n        ]\n}\n",
+        "x": 160,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "ef2c522da453a408",
+        "type": "function",
+        "z": "5e7fdee23c9d653f",
+        "name": "Handle HTTP POST Response",
+        "func": "// Get the device data from the key message of the payload\ndata = msg.payload.message;\n// node.warn(data);\n\n// Loop over the data\ndata.forEach(getDevices);\n\nfunction getDevices(item, index) {\n    // node.warn(JSON.stringify(item), index)\n    // get the device data\n    let device = JSON.parse(JSON.stringify(item));\n    node.warn(\"id=\" + device.id + \",address=\" + device.address + \",temperature=\" + device.temperature);\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "17d1f4aaf93e79c5",
+        "type": "switch",
+        "z": "5e7fdee23c9d653f",
+        "name": "Check HTTP Response Status",
+        "property": "payload.status",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "OK",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "ERROR",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 210,
+        "y": 200,
+        "wires": [
+            [
+                "ef2c522da453a408"
+            ],
+            [
+                "7b7b06756ee15219"
+            ]
+        ]
+    }
+]

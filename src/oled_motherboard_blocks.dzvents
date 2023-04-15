@@ -1,0 +1,120 @@
+--[[
+File:   oled_blocks.dzvents
+Date:   20230323
+Author: Robert W.B. Linn
+:description
+Set raspberry pi selective motherboard data on an 0,96" I2C OLED display connected to a Raspberry Pi Pico W ruinning as webserver.
+The data is submitted to the PicoW as HTTP POST request.
+The OLED display has 6 block to display title:value for a motherboard sensor.
+Domoticz Log
+2023-03-23 14:29:36.115 VirtualSensors: Light/Switch (PicoW LED1 Control)
+2023-03-23 14:29:36.109 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (16/PicoW LED1 Control/On)
+2023-03-23 14:29:36.210 Status: dzVents: Info: Handling events for: "PicoW LED1 Control", value: "On"
+2023-03-23 14:29:36.210 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: ------ Start internal script: picow_oled_blocks: Device: "PicoW LED1 Control (VirtualSensors)", Index: 16
+2023-03-23 14:29:36.210 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: Device PicoW LED1 Control state changed to On
+2023-03-23 14:29:36.216 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: {{["value"]="1429", ["block"]=1, ["title"]="Time"}, {["value"]=43, ["block"]=2, ["title"]="Temp"}, {["value"]=0.7, ["block"]=3, ["title"]="CPU"}, {["value"]=22, ["block"]=4, ["title"]="Mem"}, {["value"]=600, ["block"]=5, ["title"]="ARM"}, {["value"]=39, ["block"]=6, ["title"]="HDD"}}
+2023-03-23 14:29:36.216 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: ------ Finished picow_oled_blocks
+2023-03-23 14:29:36.217 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-03-23 14:29:36.754 Status: dzVents: Info: Handling httpResponse-events for: "RES_PICOW_OLED_MOTHERBOARD"
+2023-03-23 14:29:36.754 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: ------ Start internal script: picow_oled_blocks: HTTPResponse: "RES_PICOW_OLED_MOTHERBOARD"
+2023-03-23 14:29:36.755 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: {["status"]="OK", ["message"]="", ["title"]={{["value"]="1429", ["block"]=1, ["title"]="Time"}, {["value"]=43, ["block"]=2, ["title"]="Temp"}, {["value"]=0.7, ["block"]=3, ["title"]="CPU"}, {["value"]=22, ["block"]=4, ["title"]="Mem"}, {["value"]=600, ["block"]=5, ["title"]="ARM"}, {["value"]=39, ["block"]=6, ["title"]="HDD"}}}
+2023-03-23 14:29:36.755 Status: dzVents: Info: LOG_PICOW_OLED_MOTHERBOARD: ------ Finished picow_oled_blocks 
+]]--
+-- URL of the PicoW webserver
+local URL_PICOW     = 'webserver-ip'
+local PROJECT       = 'PICOW_OLED_MOTHERBOARD'
+local RES_HTTP      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+local TIMER_RULE    = 'every minute'
+-- Domoticz
+-- For tests the trigger is an switch type onoff
+local IDX_SWITCH = 16
+--- IDX of the motherboard sensors (devices)
+local IDX_INTERNALTEMPERATURE = 18	-- temperature
+local IDX_ARMCLOCKSPEED = 19		-- sensorValue
+local IDX_V3DCLOCKSPEED = 20		-- sensorValue
+local IDX_CORECLOCKSPEED = 21		-- sensorValue
+local IDX_MEMORYUSAGE = 22			-- percentage
+local IDX_PROCESSUSAGE = 23			-- sensorValue
+local IDX_HDDBOOT = 24				-- percentage
+local IDX_HDD = 25					-- percentage
+local IDX_CPUUSAGE = 26				-- percentage
+-- Round a number with digital places
+local function round(num, numDecimalPlaces)
+  return tonumber(string.format("%." .. (numDecimalPlaces or 0) .. "f", num))
+end
+-- Create table with keys block, title, value to be displayed on the OLED.
+-- Block numbers are 1 to 6, title and value length max 4 characters
+-- setBlock(1,'Title', 123)
+local function setBlock(block, title, value)
+    local x = {}
+    x['block']=block
+    x['title']=title
+    x['value']=value
+	return x
+end
+-- Create a json array with sensor data to display on the oled in block 1-6
+--- {["title"]={{["block"]=1, ["title"]="Time", ["value"]="1353"}, {["block"]=2, ["title"]="Temp", ["value"]=42}, {["block"]=3, ["title"]="CPU", ["value"]=0.48}, {["block"]=4, ["title"]="Mem", ["value"]=22}, {["block"]=5, ["title"]="ARM", ["value"]=600}, {["block"]=6, ["title"]="HDD", ["value"]=39}}, ["status"]="OK", ["message"]=""}
+local function setMotherboardData(domoticz)
+    local data = {}
+    t = string.sub(domoticz.time.rawTime, 1, 5)
+    t = string.gsub(t, ':','')
+	data[1] = setBlock(1, 'Time', t)
+    data[2] = setBlock(2, 'Temp', round(domoticz.devices(IDX_INTERNALTEMPERATURE).temperature, 0))
+	data[3] = setBlock(3, 'CPU', round(domoticz.devices(IDX_CPUUSAGE).percentage, 2))
+	data[4] = setBlock(4, 'Mem', round(domoticz.devices(IDX_MEMORYUSAGE).percentage, 0))
+	data[5] = setBlock(5, 'ARM', round(domoticz.devices(IDX_ARMCLOCKSPEED).sensorValue, 0))
+	data[6] = setBlock(6, 'HDD', round(domoticz.devices(IDX_HDD).percentage, 0))
+    --[[
+    data['internaltemperature'] = round(domoticz.devices(IDX_INTERNALTEMPERATURE).temperature, 2)
+	data['armclockspeed']       = round(domoticz.devices(IDX_ARMCLOCKSPEED).sensorValue, 0)
+	data['v3dclockspeed']       = round(domoticz.devices(IDX_V3DCLOCKSPEED).sensorValue, 0)
+	data['coreclockspeed']      = round(domoticz.devices(IDX_CORECLOCKSPEED).sensorValue, 0)
+	data['memoryusage']         = round(domoticz.devices(IDX_MEMORYUSAGE).percentage, 2)
+	data['processusage']        = round(domoticz.devices(IDX_PROCESSUSAGE).sensorValue, 2)
+	data['hddboot']             = round(domoticz.devices(IDX_HDDBOOT).percentage, 2)
+	data['hdd']                 = round(domoticz.devices(IDX_HDD).percentage, 2)
+	data['cpuusage']            = round(domoticz.devices(IDX_CPUUSAGE).percentage, 2)
+    ]]--
+	domoticz.log(data)
+	return data
+end
+local function submitRequest(domoticz)
+    domoticz.openURL({
+        url = URL_PICOW, method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = setMotherboardData(domoticz), callback = RES_HTTP,
+       }) 
+end
+return {
+    -- Listen to switch device changes and HTTP responses
+	on = { devices = { IDX_SWITCH }, timer = { TIMER_RULE }, httpResponses = { RES_HTTP } },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	execute = function(domoticz, item)
+        if (item.isTimer) then 
+            submitRequest(domoticz)
+        end
+		if (item.isDevice) then
+		    domoticz.log(string.format('Device %s state changed to %s', item.name, item.state))
+            if (item.state == 'On') or (item.state == 'Off') then 
+                submitRequest(domoticz)
+            end
+        end
+        -- Handle HTTP response: OK is item statusCode 200 and item.ok true
+        -- Else error like statusCode 7, item.ok false
+        if (item.isHTTPResponse) then
+            -- domoticz.log(string.format("%d %s", item.statusCode, item.ok))
+            if (item.statusCode == 200) then
+                if (item.isJSON) then
+                    -- {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+                    local data = item.json
+                    domoticz.log(data)
+                    -- domoticz.log(string.format("LED1 status=%s, title=%s, message=%s", data.status, data.title, data.message))
+                end
+            else
+                -- Error like 7 false; ERROR 7:Couldn't connect to server 
+                domoticz.log(string.format("ERROR %d:%s", item.statusCode, item.statusText))
+            end
+        end		
+	end
+}

@@ -1,0 +1,83 @@
+--[[
+File:	ledcontrol-device-change-httpget-onoff.dzvents
+Date:	20230224
+Author: Robert W.B. Linn
+Remote control, via Domoticz Switch On/Off, the state of the Pico W LED1 of the Pico Breadbord Kit.
+Action triggered by the switch running function openURL with GET request: http://webserver-ip/led1/on, off, state
+Domoticz Log Example
+2023-04-09 11:36:46.773 VirtualSensors: Light/Switch (PicoW LED1 Control)
+2023-04-09 11:36:46.765 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (16/PicoW LED1 Control/On)
+2023-04-09 11:36:46.860 Status: dzVents: Info: Handling events for: "PicoW LED1 Control", value: "On"
+2023-04-09 11:36:46.861 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Start internal script: ledcontrol-device-change-httpget-onoff: Device: "PicoW LED1 Control (VirtualSensors)", Index: 16
+2023-04-09 11:36:46.861 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: Device PicoW LED1 Control was changed to On
+2023-04-09 11:36:46.861 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Finished ledcontrol-device-change-httpget-onoff
+2023-04-09 11:36:46.861 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-04-09 11:36:47.092 Status: dzVents: Info: Handling httpResponse-events for: "RES_LEDCONTROL-DEVICE-CHANGE"
+2023-04-09 11:36:47.092 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Start internal script: ledcontrol-device-change-httpget-onoff: HTTPResponse: "RES_LEDCONTROL-DEVICE-CHANGE"
+2023-04-09 11:36:47.092 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: {["title"]="/led1/on", ["status"]="OK", ["message"]="On"}
+2023-04-09 11:36:47.092 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: OK
+2023-04-09 11:36:47.092 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Finished ledcontrol-device-change-httpget-onoff
+2023-04-09 11:36:49.533 VirtualSensors: Light/Switch (PicoW LED1 Control)
+2023-04-09 11:36:49.530 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (16/PicoW LED1 Control/Off)
+2023-04-09 11:36:49.581 Status: dzVents: Info: Handling events for: "PicoW LED1 Control", value: "Off"
+2023-04-09 11:36:49.582 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Start internal script: ledcontrol-device-change-httpget-onoff: Device: "PicoW LED1 Control (VirtualSensors)", Index: 16
+2023-04-09 11:36:49.582 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: Device PicoW LED1 Control was changed to Off
+2023-04-09 11:36:49.582 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Finished ledcontrol-device-change-httpget-onoff
+2023-04-09 11:36:49.582 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-04-09 11:36:49.908 Status: dzVents: Info: Handling httpResponse-events for: "RES_LEDCONTROL-DEVICE-CHANGE"
+2023-04-09 11:36:49.909 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Start internal script: ledcontrol-device-change-httpget-onoff: HTTPResponse: "RES_LEDCONTROL-DEVICE-CHANGE"
+2023-04-09 11:36:49.909 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: {["title"]="/led1/off", ["status"]="OK", ["message"]="Off"}
+2023-04-09 11:36:49.909 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: OK
+2023-04-09 11:36:49.909 Status: dzVents: Info: LOG_LEDCONTROL-DEVICE-CHANGE: ------ Finished ledcontrol-device-change-httpget-onoff 
+]]--
+-- Domoticz IDX of the switch triggering PicoW LED on/off
+local IDX_SWITCH  = 16
+local URL_SERVER      = "http://webserver-ip"
+local CMD_LED_ON      = '/led1/on'
+local CMD_LED_OFF     = '/led1/off'
+local CMD_LED_STATE   = '/led1/state'
+local EXPERIMENT    = "LEDCONTROL-DEVICE-CHANGE"
+local RES_HTTP        = "RES_" .. EXPERIMENT
+local LOG_MARKER      = "LOG_" .. EXPERIMENT
+return {
+	on = { devices = { IDX_SWITCH }, httpResponses = { RES_HTTP } },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER,	},
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+            local state = item.state
+            local cmd = ''
+		    domoticz.log('Device ' .. item.name .. ' was changed to ' .. state, domoticz.LOG_INFO)
+            if (item.state == 'On') then
+                cmd = CMD_LED_ON
+            end
+            if (item.state == 'Off') then
+                cmd = CMD_LED_OFF
+            end
+            -- Submit HTTP GET request to the picow server
+            -- The URL contains the command
+            domoticz.openURL({
+               url = URL_SERVER .. cmd,
+               method = 'GET',
+               callback = RES_HTTP,
+               }) 
+        end
+        -- Handle HTTP response: OK is item statusCode 200 and item.ok true
+        -- Else error like statusCode 7, item.ok false
+        if (item.isHTTPResponse) then
+            -- domoticz.log(string.format("%d %s", item.statusCode, item.ok))
+            if (item.statusCode == 200) then
+                if (item.isJSON) then
+                    --  {["message"]="On", ["status"]="OK", ["title"]="/led1/on"}
+                    local data = item.json
+                    domoticz.log(data)
+                    domoticz.log(data.status)
+                end
+            else
+                -- Error like 7 false; ERROR 7:Couldn't connect to server 
+                domoticz.log(string.format("ERROR %d:%s", item.statusCode, item.statusText))
+            end
+        end		
+	end
+}

@@ -1,0 +1,18 @@
+--[[
+File:   bmp280.dzvents
+Date:   20230418
+Author: Robert W.B. Linn
+:description
+Listen to bmp280 device changes. No action defined.
+]]--
+-- BMP280 device IDX
+IDX_BMP280 = 29
+return {
+  -- Listen to device changes.
+	on = { devices = { IDX_BMP280 } },
+	logging = { level = domoticz.LOG_INFO, marker = 'BMP280', },
+	execute = function(domoticz, device)
+	    -- domoticz.log(device)
+		domoticz.log(string.format('Device %s has changed. New state %s', device.name, device.state))
+	end
+}

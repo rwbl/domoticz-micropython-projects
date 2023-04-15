@@ -1,0 +1,68 @@
+-- picow_tm1637_motherboard_internal_temperature.dzvents
+-- Display the motherboard_internal_temperature on a TM1637 connected to the Pico W.
+-- The PicoW runs a RESTful webserver.
+-- The HTTP POST request to the PicoW webserver is a JSON object: {"data":NN}.
+-- The NN is the temperature with 0 digit (integer).
+-- The PicoW webserver HTTP response is a JSON object with key:value pairs: 
+-- {["message"]="On", ["title"]="{"data": "NN.N"}", ["status"]="OK"}
+-- 20230304 rwbl
+-- Domoticz Log
+--[[
+]]--
+-- Domoticz
+local IDX_INTERNAL_TEMPERATURE = 18
+local IDX_SWITCH = 16
+local HTTP_URL        = 'http://webserver-ip'
+-- HTTP_POST_DATA  = '{"data":"on"}'
+local HTTP_RES        = 'RES_PICOW_LCDLEDCONTROL'
+local LOG_MARKER      = 'LOG_PICOW_LCDLEDCONTROL'
+local TIMER_RULE = "every minute"
+-- Helpers
+local function round(number, decimals)
+    local power = 10^decimals
+    return math.floor(number * power) / power
+end
+-- Post Data to the Pico W Webserver.
+-- The data is a JSON object with the temperature rounded: {"data":NN}
+local function HTTPPost(domoticz)
+    local data = {}
+    data['data'] = domoticz.devices(IDX_INTERNAL_TEMPERATURE).temperature
+    domoticz.log(string.format('device=%s, temperature=%.1f',domoticz.devices(IDX_INTERNAL_TEMPERATURE).name, domoticz.devices(IDX_INTERNAL_TEMPERATURE).temperature), domoticz.LOG_INFO)
+    domoticz.log(data)
+    -- Submit remote HTTP POST request to set the tm1637
+    domoticz.openURL({
+        url = HTTP_URL,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = data,
+        callback = HTTP_RES,
+       }) 
+end
+return {
+    -- Listen to switch device changes and HTTP responses
+	on = { 
+	    devices = { IDX_SWITCH, IDX_INTERNAL_TEMPERATURE }, 
+	    timer = { TIMER_RULE },
+	    httpResponses = { HTTP_RES } 
+    },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isTimer) then
+            HTTPPost(domoticz)		    
+        end
+		if (item.isDevice) then
+            HTTPPost(domoticz)		    
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}

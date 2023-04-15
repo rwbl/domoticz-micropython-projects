@@ -1,0 +1,52 @@
+--[[
+File:   ds18b20_customevent.dzvents
+Date:   20230412
+Author: Robert W.B. Linn
+:description
+Listen to picow webserver request custom event command and update the temp devices assigned to the ds18b20 device(s).
+:log
+023-04-12 15:42:03.651 Status: dzVents: Info: Handling Domoticz custom event for: "DS18B20"
+2023-04-12 15:42:03.652 Status: dzVents: Info: ------ Start internal script: ds18b20_customevent: Custom event: "DS18B20"
+2023-04-12 15:42:03.653 Status: dzVents: Info: d=X28FF5E1804150334, t=16.75
+2023-04-12 15:42:03.678 Status: dzVents: Info: d=X28330A9497040373, t=15.50
+2023-04-12 15:42:03.679 Status: dzVents: Info: ------ Finished ds18b20_customevent
+2023-04-12 15:42:03.680 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua 
+]]--
+-- Custom event name as used by the PicoW webserver HTTP API/JSON POST request
+local CUSTOM_EVENT_NAME = 'DS18B20'
+-- Define map table between ds18b20 device address (with prefix X because keys mist start with a character) and the domoticz idx
+local devices = { 
+    X28FF5E1804150334 = 31, -- DS18B20-1
+    X28330A9497040373 = 32  -- DS18B20-2
+}
+-- Update the devices by looping over the lua table containing address & temperature
+-- {["X30FF5E1804150334"]=15.75, ["X28330A9497040373"]=16.75}
+local function updateDevices(domoticz, data)
+    for k,v in pairs(data) do
+        -- d=X28FF5E1804150334, t=16.75
+        -- d=X28330A9497040373, t=15.50
+        domoticz.log(string.format('d=%s, t=%0.2f', k, v))
+        -- Select the device and update
+        domoticz.devices(devices[k]).updateTemperature(v)
+    end
+end
+return {
+	on = {
+		customEvents = { CUSTOM_EVENT_NAME }
+	},
+	data = {},
+	logging = {},
+	execute = function(domoticz, triggeredItem)
+		if (triggeredItem.isCustomEvent) then
+			--  domoticz.log(triggeredItem)
+            -- Check the custom event name in case there are more custom events
+		    if (triggeredItem.trigger == CUSTOM_EVENT_NAME) then
+    			-- domoticz.log(triggeredItem.data)
+    			local data = triggeredItem.json
+    			-- {["X30FF5E1804150334"]=20.5, ["X28FF5E1804150334"]=16.5}
+    			-- domoticz.log(data)
+    			updateDevices(domoticz, data)
+    		end
+		end
+	end
+}

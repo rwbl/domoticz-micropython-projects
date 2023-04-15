@@ -1,0 +1,87 @@
+--[[
+File:   ds18b20_client_domoticz.dzvents
+Date:   20230413
+Author: Robert W.B. Linn
+:description
+Requests in regular intervals DS18B20 sensor data from a Pico W Web Server.
+The HTTP response JSON object is parsed and the Domoticz temperature devices assigned to the ds18b20 device(s) are updated.
+{["message"]={{["temperature"]=19.5, ["address"]="28FF5E1804150334", ["id"]=1}, {["temperature"]=15.4375, ["address"]="28330A9497040373", ["id"]=2}}, ["status"]="OK", ["title"]="{'request': 1}"}
+:log
+2023-04-13 10:54:29.351 VirtualSensors: Light/Switch (PicoW Switch Control)
+2023-04-13 10:54:29.345 Status: User: admin initiated a switch command (16/PicoW Switch Control/On)
+2023-04-13 10:54:29.452 Status: dzVents: Info: Handling events for: "PicoW Switch Control", value: "On"
+2023-04-13 10:54:29.452 Status: dzVents: Info: LOG_DS18B20_REQUEST: ------ Start internal script: ds18b20_client_domoticz: Device: "PicoW Switch Control (VirtualSensors)", Index: 16
+2023-04-13 10:54:29.453 Status: dzVents: Info: LOG_DS18B20_REQUEST: ------ Finished ds18b20_client_domoticz
+2023-04-13 10:54:29.453 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-04-13 10:54:30.428 Status: dzVents: Info: Handling httpResponse-events for: "RES_DS18B20_REQUEST"
+2023-04-13 10:54:30.428 Status: dzVents: Info: LOG_DS18B20_REQUEST: ------ Start internal script: ds18b20_client_domoticz: HTTPResponse: "RES_DS18B20_REQUEST"
+2023-04-13 10:54:30.428 Status: dzVents: Info: LOG_DS18B20_REQUEST: {["title"]="{'request': 1}", ["message"]={{["temperature"]=20.75, ["address"]="28FF5E1804150334", ["id"]=1}, {["temperature"]=16.375, ["address"]="28330A9497040373", ["id"]=2}}, ["status"]="OK"}
+2023-04-13 10:54:30.440 Status: dzVents: Info: LOG_DS18B20_REQUEST: Updated: idx=31, name=DS18B20-1, a=28FF5E1804150334, t=20.75
+2023-04-13 10:54:30.441 Status: dzVents: Info: LOG_DS18B20_REQUEST: Updated: idx=32, name=DS18B20-2, a=28330A9497040373, t=16.38
+2023-04-13 10:54:30.441 Status: dzVents: Info: LOG_DS18B20_REQUEST: ------ Finished ds18b20_client_domoticz
+2023-04-13 10:54:30.441 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua 
+]]--
+-- Domoticz IDX of the switch triggering the request
+local IDX_SWITCH  = 16
+local URL_SERVER    = 'http://webserver-ip'
+local PROJECT       = 'DS18B20_REQUEST'
+local RES_HTTP      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+-- Define map table between ds18b20 device address (with prefix X because keys must start with a character) and the domoticz idx
+local devices = { 
+    X28FF5E1804150334 = 31, -- DS18B20-1
+    X28330A9497040373 = 32  -- DS18B20-2
+}
+-- Send HTTP POST request to get the sensor data from the Pico W Web Server
+local function requestData(domoticz)
+    local postdata = {}
+    postdata["request"] = 1
+    domoticz.openURL({
+       url = URL_SERVER, method = 'POST',
+       postData = postdata, callback = RES_HTTP,
+       }) 
+end
+-- Update the devices by looping over the Lua array data and the Lua device table containing address & temperature.
+-- The data is taken from the key message from the HTTP JSON response.
+-- {{["address"]="28FF5E1804150334", ["id"]=1, ["temperature"]=19.25}, {["address"]="28330A9497040373", ["id"]=2, ["temperature"]=15.5}}
+local function updateDevices(domoticz, data)
+    for i, device in ipairs(data) do
+        -- Select the device and update
+        local deviceaddress = 'X' .. device.address
+        local deviceidx = devices[deviceaddress] 
+        domoticz.devices(deviceidx).updateTemperature(device.temperature)
+        domoticz.log(string.format('Updated: idx=%s, name=%s, a=%s, t=%0.2f', domoticz.devices(deviceidx).idx, domoticz.devices(deviceidx).name, device.address, device.temperature))
+    end
+end
+--Timer Rule (for tests use every minute)
+local TIMER_RULE = 'every minute'
+return {
+	on = { 
+	    timer = { TIMER_RULE }, 
+	    devices = { IDX_SWITCH },
+	    httpResponses = { RES_HTTP } 
+    },
+    logging = { 
+        level = domoticz.LOG_INFO, 
+        marker = LOG_MARKER,
+    },
+	execute = function(domoticz, triggeredItem)
+	    -- Trigger the HTTP POST request to the Pico W Web Server
+        if (triggeredItem.isDevice or triggeredItem.isTimer) then requestData(domoticz) end
+        -- Handle HTTP response: OK is item statusCode 200 and item.ok true
+        -- Else error like statusCode 7, item.ok false
+        if (triggeredItem.isHTTPResponse) then
+            -- domoticz.log(string.format("%d %s", item.statusCode, item.ok))
+            if (triggeredItem.statusCode == 200) then
+                if (triggeredItem.isJSON) then
+                    local data = triggeredItem.json
+                    domoticz.log(data)
+                    updateDevices(domoticz, data.message)
+                end
+            else
+                -- Error like 7 false; ERROR 7:Couldn't connect to server 
+                domoticz.log(string.format("ERROR %d:%s", item.statusCode, item.statusText))
+            end
+        end		
+	end
+}

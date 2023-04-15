@@ -1,0 +1,74 @@
+--[[
+File:   servocontrol.dzvents
+Date:   20230305
+Author: Robert W.B. Linn
+Display the motherboard_internal_temperature on a TM1637 connected to the Pico W.
+The PicoW runs a RESTful webserver.
+The HTTP POST request to the PicoW webserver is a JSON object: {"angle":NNN}.
+The NN is the angle of the servo to set. The angle is converted from the dimmer range 0-100% to 0-180 deg.
+The PicoW webserver HTTP response is a JSON object with key:value pairs: 
+{"status": "OK", "title": "{\"angle\": 133}", "message": "133"}
+]]--
+-- Domoticz
+local IDX_SWITCH = 16
+local IDX_DIMMER = 1
+local HTTP_URL        = 'http://webserver-ip'
+-- HTTP_POST_DATA  = '{"angle":90}'
+local HTTP_RES        = 'RES_PICOW_SERVOCONTROL'
+local LOG_MARKER      = 'LOG_PICOW_SERVOCONTROL'
+-- Round to the nearest number
+local function roundNearest(number)
+    return math.floor(number + 0.5)
+end
+-- Post Data to the Pico W Webserver.
+-- The data is a JSON object with the servo angle rounded: {"angle":NNN}
+local function HTTPPost(domoticz, angle)
+    local data = {}
+    data['angle'] = angle
+    --data['angle'] = domoticz.devices(IDX_INTERNAL_TEMPERATURE).temperature
+    domoticz.log(string.format('device=%s, angle=%d',domoticz.devices(IDX_SWITCH).name, angle), domoticz.LOG_INFO)
+    domoticz.log(data)
+    domoticz.openURL({
+        url = HTTP_URL,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = data,
+        callback = HTTP_RES,
+       }) 
+end
+return {
+    -- Listen to dimmer device changes and HTTP responses
+	on = { 
+	    devices = { IDX_DIMMER }, 
+	    httpResponses = { HTTP_RES } 
+    },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+            -- Check if state is on. Get the slider level to set the angle.
+            if (item.state == 'On') then
+    		    -- Get the level 0 - 100 %
+    		    level = tonumber(item.levelVal)
+    		    -- Convert the level to angle 0 - 180 deg
+    		    angle = roundNearest((180 / 100) * level)
+            end
+            -- Check if the state is Off (the off button pressed)
+            if (item.state == 'Off') then angle = 0 end
+            -- Log		    
+		    domoticz.log(string.format("device=%s, state=%s, levelVal=%d, angle=%d", item.name, item.state, item.levelVal, angle))
+		    -- Set the servo angle
+            HTTPPost(domoticz, angle)
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {"status": "OK", "title": "{\"angle\": 133}", "message": "133"}
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}

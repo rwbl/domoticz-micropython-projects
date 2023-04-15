@@ -1,0 +1,17 @@
+--[[
+File: pir_motion_sensor.dzvents
+Date: 20230326
+Author: Robert W.B. Linn
+:description
+Listen to PIR motion device changes
+]]--
+-- Alert device
+IDX_ALERT = 7
+return {
+    -- Listen to device changes.
+	on = { devices = { IDX_ALERT } },
+	logging = { level = domoticz.LOG_INFO, marker = 'PIR', },
+	execute = function(domoticz, device)
+		domoticz.log(string.format('Device %s - Motion detected.', device.name))
+	end
+}

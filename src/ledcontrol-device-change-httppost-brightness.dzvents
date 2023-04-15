@@ -1,0 +1,53 @@
+--[[
+File:	ledcontrol-device-change-httppost-brightness.dzvents
+Date:	20230325
+Author: Robert W.B. Linn
+Remote control, via Domoticz switch dimmer, the state of a RED LED connected the PicoW.
+Action triggered by the switch running function openURL with POST request:
+http://picow-ip with postdata: {["cmd"]="brightness", ["value"]=0.39, ["led"]="red"}
+]]--
+-- Domoticz IDX of the dimmer triggering PicoW LED 
+local IDX_SWITCH  = 1
+local URL_SERVER    = 'http://webserver-ip'
+local EXPERIMENT    = 'LEDBRIGHTNESS'
+local RES_HTTP      = 'RES_' .. EXPERIMENT
+local LOG_MARKER    = 'LOG_' .. EXPERIMENT
+return {
+	on = { devices = { IDX_SWITCH }, httpResponses = { RES_HTTP } },
+    logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER,	},
+	
+	execute = function(domoticz, item)
+		if (item.isDevice) then
+		    -- Create the postdata table 
+            local postdata = {}
+            postdata['led'] = 'red'
+            postdata['cmd'] = 'brightness'
+            local brightness = item.level
+            if brightness > 0 then brightness = brightness / 100 end
+            if item.state == 'Off' then brightness = 0 end
+            postdata['value'] = brightness
+		    domoticz.log('Device ' .. item.name .. ' brightness changed.')
+		    domoticz.log(postdata)
+            -- Submit HTTP POST request to the picow server
+            domoticz.openURL({
+               url = URL_SERVER, method = 'POST',
+               postData = postdata, callback = RES_HTTP }) 
+        end
+        -- Handle HTTP response: OK is item statusCode 200 and item.ok true
+        -- Else error like statusCode 7, item.ok false
+        if (item.isHTTPResponse) then
+            -- domoticz.log(string.format("%d %s", item.statusCode, item.ok))
+            if (item.statusCode == 200) then
+                if (item.isJSON) then
+                    --  {["message"]="On", ["status"]="OK", ["title"]="/led1/on"}
+                    local data = item.json
+                    domoticz.log(data)
+                    -- domoticz.log(data.status)
+                end
+            else
+                -- Error like 7 false; ERROR 7:Couldn't connect to server 
+                domoticz.log(string.format("ERROR %d:%s", item.statusCode, item.statusText))
+            end
+        end		
+	end
+}

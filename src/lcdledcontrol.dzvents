@@ -1,0 +1,62 @@
+--[[
+File:   lcdledcontrol.dzvents
+Date:   20230221
+Author: Robert W.B. Linn
+Switch the PicoW LED1 (of the Breadboard Kit) and display on LCD2004.
+The PicoW runs a RESTful webserver.
+The HTTP POST request to the PicoW webserver is a JSON object: {"state":"on" or "off"}.
+The PicoW webserver HTTP response is a JSON object with key:value pairs: 
+{["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+Domoticz Log
+2023-02-21 10:23:36.299 Status: dzVents: Info: Handling events for: "PicoW-Control", value: "On"
+2023-02-21 10:23:36.300 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: ------ Start internal script: picow_lcdledcontrol: Device: "PicoW-Control (VirtualSensors)", Index: 16
+2023-02-21 10:23:36.300 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: Device PicoW-Control state changed to On
+2023-02-21 10:23:36.300 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: ------ Finished picow_lcdledcontrol
+2023-02-21 10:23:36.300 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-02-21 10:23:37.308 Status: dzVents: Info: Handling httpResponse-events for: "RES_PICOW_LCDLEDCONTROL"
+2023-02-21 10:23:37.308 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: ------ Start internal script: picow_lcdledcontrol: HTTPResponse: "RES_PICOW_LCDLEDCONTROL"
+2023-02-21 10:23:37.308 Status: {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+2023-02-21 10:23:37.309 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: LED1 status=OK, title={"state": "on"}, message=On
+2023-02-21 10:23:37.309 Status: dzVents: Info: LOG_PICOW_LCDLEDCONTROL: ------ Finished picow_lcdledcontrol 
+]]--
+-- Domoticz
+-- For tests the trigger is an switch type onoff
+local IDX_SWITCH = 16
+local URL_SERVER      = 'http://webserver-ip'
+local CMD_LED_ON      = '{"state":"on"}'
+local CMD_LED_OFF     = '{"state":"off"}'
+local RES_HTTP        = 'RES_PICOW_LCDLEDCONTROL'
+local LOG_MARKER      = 'LOG_PICOW_LCDLEDCONTROL'
+return {
+    -- Listen to switch device changes and HTTP responses
+	on = { devices = { IDX_SWITCH }, httpResponses = { RES_HTTP } },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+            local state = item.state
+            local cmd
+		    domoticz.log(string.format('Device %s state changed to %s',item.name,state), domoticz.LOG_INFO)
+            if (item.state == 'On') then cmd = CMD_LED_ON end
+            if (item.state == 'Off') then cmd = CMD_LED_OFF end
+            -- Submit remote HTTP POST request to set the LCD display
+            domoticz.openURL({
+                url = URL_SERVER,
+                method = 'POST',
+                headers = { ['content-type'] = 'application/json' },
+                postData = cmd,
+                callback = RES_HTTP,
+               }) 
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {["message"]="On", ["title"]="{"state": "on"}", ["status"]="OK"}
+                local data = item.json
+                domoticz.log(string.format("LED1 status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}
