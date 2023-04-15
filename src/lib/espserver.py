@@ -1,23 +1,23 @@
 """
-File:	server.py
-Date:	20230413
+File:	espserver.py
+Date:	20230414
 Author:	Robert W.B. Linn
 
 :description
-Class to manage the PicoW RESTful webserver.
+Class to manage the ESP8266 RESTful webserver.
 Commands set via HTTP GET or POST requests with HTTP response JSON object.
 
 :examples
 ***HTTP GET***
-LED ON: http://picow-ip/led1/on with HTTP response: {"status": "OK", "title": "/led1/on", "message": "On"}
-LED OFF: http://picow-ip/led1/off with HTTP response: {"status": "OK", "title": "/led1/off", "message": "Off"}
-LED STATE: http://picow-ip/led1/state with HTTP response: {"status": "OK", "title": "/led1/state", "message": "On"}
+LED ON: http://esp-ip/led1/on with HTTP response: {"status": "OK", "title": "/led1/on", "message": "On"}
+LED OFF: http://esp-ip/led1/off with HTTP response: {"status": "OK", "title": "/led1/off", "message": "Off"}
+LED STATE: http://esp-ip/led1/state with HTTP response: {"status": "OK", "title": "/led1/state", "message": "On"}
 In case of error, the HTTP response:
 {"status": "ERROR", "title": "/led1/x", "message": "Unknown command."}
 [Thonny Log]
 LEDControl Network GET v20230310
 Network connected OK
-Network IP picow-ip
+Network IP esp-ip
 Network listening on ('0.0.0.0', 80)
 Network client connected from client-ip
 HTTP Command /led1/on
@@ -25,9 +25,10 @@ HTTP Response {"title": "/led1/on", "message": "On", "status": "OK"}
 Network connection closed
 
 ***HTTP POST***
-LED ON: curl -v -H "Content-Type: application/json" -d "{\"state\":1}" http://picow-ip
+LED ON: curl -v -H "Content-Type: application/json" -d "{\"state\":1}" http://esp-ip
 {"status": "OK", "title": {"state": 1}, "message": 1}
-LED OFF: curl -v -H "Content-Type: application/json" -d "{\"state\":0}" http://picow-ip
+LED OFF: curl -v -H "Content-Type: application/json" -d "{\"state\":0}" http://esp-ip
+LED OFF: curl -v -H "Content-Type: application/json" -d "{\"state\":0}" http://esp-ip
 {"status": "OK", "title": {"state": 0}, "message": 0}
 In case of error (like JSON object not valid = can be be parsed), the HTTP response:
 HTTP Response: {"status": "ERROR", "title": "{state:vvv}", "message": "Unknown command."}
@@ -37,22 +38,15 @@ with console log [ERROR] HTTP POST request not valid (ValueError).
 When using curl ensure to escape the " to \" in the JSON object.
 
 :log
-LEDControl Network v20230310
+esp8266-ledremotecontrol v20230413
+#18 ets_task(4020f560, 28, 3fff9f40, 10)
+Network waiting for connection...
 Network connected OK
-Network IP picow-ip
+Network IP esp-ip
 Network listening on ('0.0.0.0', 80)
 Network client connected from client-ip
-HTTP Command {'state': 1}
-HTTP Response {"status": "OK", "title": {"state": 1}, "message": 1}
-Network connection closed
-Network client connected from client-ip
-HTTP Command {'state': 0}
-HTTP Response {"status": "OK", "title": {"state": 0}, "message": 0}
-Network connection closed
-Network client connected from client-ip
-[ERROR] HTTP POST request not valid (ValueError).
-HTTP Command {state:vvv}
-HTTP Response {"status": "ERROR", "title": "{state:vvv}", "message": "Unknown command."}
+HTTP Command=/led1/off
+HTTP Response={"title": "/led1/off", "message": "Off", "status": "OK"}
 Network connection closed
 """
 
@@ -69,8 +63,8 @@ Class Server
 """
 class Server:
     # Constants
-    NAME = 'Server'
-    VERSION = 'v20230321'
+    NAME = 'ESPServer'
+    VERSION = 'v20230414'
 
     CRLF = chr(13) + chr(10)
     SPACE = chr(32)
@@ -90,7 +84,7 @@ class Server:
     MESSAGE_ON			= 'On'
     MESSAGE_OFF			= 'Off'
 
-    def __init__(self, wifi_ssid, wifi_password, STATUS_PIN="LED", DEBUG=True):
+    def __init__(self, wifi_ssid, wifi_password, STATUS_PIN=16, DEBUG=True):
         """
         Init the network with defaults.
         
@@ -102,6 +96,7 @@ class Server:
             
         :param string | int STATUS_PIN
             Pin number of the LED indicating network status connected
+            For an NodeMCU this is GPIO16 (pin #D0)
             
         :param bool DEBUG
             Flag to set the log for debugging purposes
@@ -141,26 +136,28 @@ class Server:
         """
         try:
             wlan = network.WLAN(network.STA_IF)
+            if wlan.isconnected():
+                wlan.active(False)
             wlan.active(True)
             wlan.connect(self.wifi_ssid, self.wifi_password)
-
             # Network connection
-            self.log(f'Network waiting for connection...')
             max_wait = 10
-            while max_wait > 0:
+            self.log('Network waiting for connection...')
+            while wlan.isconnected() == False:
                 if wlan.status() < 0 or wlan.status() >= 3:
                     break
                 max_wait -= 1
-                time.sleep(1)
+                pass
+                max_wait -= 1
 
-            if wlan.status() != 3:
+            if wlan.isconnected() == False:
                 self.ledstatus.off()
                 raise RuntimeError('[ERROR] Network connection failed!')
             else:
                 self.ledstatus.on()
-                self.log(f'Network connected OK')
+                self.log('Network connected OK')
                 status = wlan.ifconfig()
-                self.log(f'Network IP ' + status[0] )
+                self.log('Network IP ' + status[0] )
 
             # Network Get address
             addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
@@ -174,7 +171,7 @@ class Server:
             # Bind the address befor starting to listen for icoming client connections
             server.bind(addr)
             server.listen(1)
-            self.log(f'Network listening on {addr}')
+            self.log('Network listening on ' + str(addr))
             # self.log(server)
             return server
         except OSError as e:
@@ -220,10 +217,10 @@ class Server:
                 cmd = cmds[1]
                 status = 1
             else:
-                print(f'[ERROR] HTTP GET number of command items invalid. Expect 3, got {len(cmds)}.')
+                print('[ERROR] HTTP GET number of command items invalid. Expect 3, got ' + len(cmds))
         else:
-            print(f'[ERROR] HTTP GET request not valid.')
-        self.log(f'HTTP Command={cmd}')
+            print('[ERROR] HTTP GET request not valid.')
+        self.log('HTTP Command=' + cmd)
         
         # Return the command, i.e. /led1/on etc.
         return cmd, status
@@ -267,8 +264,8 @@ class Server:
                 cmd = data[len(data) - 1]
                 print('[ERROR] HTTP POST request not valid (ValueError).')            
         else:
-            print(f'[ERROR] HTTP POST request not valid (Not enought items, must be 8 or more).')
-        self.log(f'HTTP Command={cmd}')
+            print('[ERROR] HTTP POST request not valid (Not enought items, must be 8 or more).')
+        self.log('HTTP Command=' + cmd)
         
         # Return the command as JSON object, i.e. HTTP Command: {'state': 'on'}
         return cmd, status
@@ -290,7 +287,7 @@ class Server:
         """
         # Get client connection
         cl, addr = server.accept()
-        self.log(f'Network client connected from {addr[0]}')
+        self.log('Network client connected from ' + addr[0])
         
         # Get the request data used to extract the command
         request = cl.recv(1024)
@@ -307,7 +304,7 @@ class Server:
         
         :param bool close
         """
-        self.log(f'HTTP Response={json.dumps(response)}')
+        self.log('HTTP Response=' + json.dumps(response))
 
         # Important to have a blank line prior JSON response string
         # Note the use of json.dumps for the response
@@ -316,7 +313,7 @@ class Server:
         # If flag close is set, ensure to close the connection        
         if close == True:
             cl.close()
-            self.log(f'Network connection closed')
+            self.log('Network connection closed')
 
     def send_get_request(self, url):
         """
@@ -337,22 +334,22 @@ class Server:
         """
         status = 0
         content = ''
-        self.log(f'Send GET request url={url}')
+        self.log('Send GET request url=',url)
         try:
             # URL encode space
             url = url.replace(' ', '%20')
             r = urequests.get(url)
             j = json.loads(r.content)
             content = j
-            self.log(f'Send GET request status={j['status']}')
+            self.log('Send GET request status=' + j['status'])
             r.close()
             status = 1
         except OSError as e:
-            # print(f'[ERROR] Sending data {e}')
-            raise Exception(f'[ERROR] Sending data {e}')
+            # print('[ERROR] Sending data', e)
+            raise Exception('[ERROR] Sending data ' + e)
         except ValueError as e:
-            # print(f'[ERROR] {e}, {r.content.decode()}')
-            raise Exception(f'[ERROR] {e}, {r.content.decode()}')
+            # print('[ERROR]', e, r.content.decode()')
+            raise Exception('[ERROR]', e, r.content.decode())
         return status, content 
 
     def send_post_request(self, url, postdata):
@@ -373,16 +370,17 @@ class Server:
             http://domoticz-ip:port/json.htm?type=command&param=customevent&event=DHT22&data={"h": 58, "t": 16, "s": 0}
         """
         status = 0
-        self.log(f'Send POST request url={url}, postdata={postdata}')
+        self.log('Send POST request url='+url+',postdata='+postdata)
         try:
             r = urequests.post(url, data=json.dumps(postdata))
             j = json.loads(r.content)
-            self.log(f'Send POST request status={j['status']}')
+            self.log('Send POST request status='+j['status'])
             r.close()
             status = 1
         except OSError as e:
-            print(f'[ERROR] Sending data {e}')
+            print('[ERROR] Sending data', e)
             # raise Exception('Network Connection failed.')
         return status 
+
 
 
