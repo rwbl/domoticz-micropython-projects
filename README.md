@@ -26,8 +26,7 @@ It is expected to have basic knowledge of
 * The sources are included in this document, but the latest sources can be found in the GitHub repository folder src.
 
 ## Concept
- 
-
+![image](https://user-images.githubusercontent.com/47274144/232204025-2bf210c4-1355-41b6-8fdf-85d3b7750874.png)
 
 The block diagram starts at the left with the MicroPython editor (Thonny) running on the development device (Notebook with Windows 11).
 
