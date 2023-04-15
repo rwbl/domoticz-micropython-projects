@@ -23,7 +23,7 @@ It is expected to have basic knowledge of
 * To-Do actions are tagged with [TODO] and captured in the file TODO.md.
 * Hard- and Software versions are subject to change.
 * Drawings are created with Fritzing.
-* The sources are included in this document, but the latest sources can be found in the GitHub repository folder src.
+* Sources included in this document - latest sources this GitHub repository folder src.
 
 ## Concept
 ![image](https://user-images.githubusercontent.com/47274144/232204025-2bf210c4-1355-41b6-8fdf-85d3b7750874.png)
