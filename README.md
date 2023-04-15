@@ -26,8 +26,7 @@ It is expected to have basic knowledge of
 * The sources are included in this document, but the latest sources can be found in the GitHub repository folder src.
 
 ## Credits
-**THANKS**, to the developers of the Raspberry Pi & ESP Microcontroller, Domoticz Home Automation System, MicroPython Language/Libraries/Tools and to all sharing related information.
-Without these, it would not be possible to write this document.
+**THANKS**, to the developers of the Raspberry Pi & ESP Microcontroller, Domoticz Home Automation System, MicroPython Language, Libraries & Tools and to all sharing related information. Without these, it would not be possible to write this document.
 
 ## Licence
 GNU GENERAL PUBLIC LICENSE v3.0.
