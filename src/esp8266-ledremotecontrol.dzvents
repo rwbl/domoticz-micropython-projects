@@ -13,7 +13,7 @@ The state change is triggered by device actions http://esp8266-ip/led1/on or Off
 2023-04-14 14:02:38.779 Status: dzVents: Info: template: Device LED1 Control state changed to Off
 2023-04-14 14:02:38.779 Status: dzVents: Info: template: ------ Finished esp8266_remotecontrol
 2023-04-14 14:02:41.070 VirtualSensors: Light/Switch (LED1 Control)
-2023-04-14 14:02:41.067 Status: User: admin initiated a switch command (16/LED1 Control/On)
+2023-04-14 14:02:41.067 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (16/LED1 Control/On)
 2023-04-14 14:02:41.117 Status: dzVents: Info: Handling events for: "LED1 Control", value: "On"
 2023-04-14 14:02:41.117 Status: dzVents: Info: template: ------ Start internal script: esp8266_remotecontrol: Device: "LED1 Control (VirtualSensors)", Index: 16
 2023-04-14 14:02:41.117 Status: dzVents: Info: template: Device LED1 Control state changed to On

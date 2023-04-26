@@ -1,0 +1,29 @@
+--[[
+File:   buttoncontrol.dzvents
+Date:   20230418
+Author: Robert W.B. Linn
+Handle switch device (idx=16, name=PicoW LED1 Control) state change On or Off triggered by the PicoW webserver submitting HTTP API/JSON requests.
+The HTTP request submitted from the PicoW to switch On/Off:
+http://domoticz-ip:port/json.htm?type=command&param=switchlight&idx=16&switchcmd=On or Off
+Log Example
+2023-04-10 13:13:21.310 VirtualSensors: Light/Switch (PicoW Switch Control)
+2023-04-10 13:13:21.304 Status: User: admin initiated a switch command (16/ButtonControl/Off)
+2023-04-10 13:13:21.415 Status: dzVents: Info: Handling events for: "ButtonControl", value: "Off"
+2023-04-10 13:13:21.415 Status: dzVents: Info: LOG_BUTTONCONTROL: ------ Start internal script: buttoncontrol: Device: "ButtonControl (VirtualSensors)", Index: 16
+2023-04-10 13:13:21.415 Status: dzVents: Info: LOG_BUTTONCONTROL: Device State Change: device=ButtonControl, state=Off
+2023-04-10 13:13:21.415 Status: dzVents: Info: LOG_BUTTONCONTROL: ------ Finished buttoncontrol 
+]]--
+-- Domoticz IDX of the switch which state is set by the PicoW webserver
+local IDX_SWITCH  = 16
+local LOG_MARKER = "LOG_BUTTONCONTROL"
+return {
+	on = {
+	    devices = {IDX_SWITCH} 
+    },
+	logging = { 
+	    level = domoticz.LOG_INFO, marker = LOG_MARKER
+    },
+	execute = function(domoticz, device)
+		domoticz.log(string.format('Device State Change: device=%s, state=%s', device.name, device.state), domoticz.LOG_INFO)
+	end
+}

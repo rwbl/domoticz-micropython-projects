@@ -1,0 +1,44 @@
+--[[
+File:   buttoncontrol_mqtt_ad.dzvents
+Date:   20230425
+Author: Robert W.B. Linn
+:description
+Listen to device changes which has been created using MQTT Autodiscover.
+:log
+INFO: Log after Domoticz restart
+2023-04-25 08:53:18.791 Debug: MQTTADGateway: topic: domoticz/button/makelab/config, message: {"name": "MakelabButton", "state_topic": "domoticz/button/makelab/state", "unique_id": "BM001"}
+2023-04-25 08:53:18.892 Debug: MQTTADGateway: topic: domoticz/status, message: online
+INFO: Log after pressing button K4
+2023-04-25 08:53:27.610 MQTTADGateway: Light/Switch/Switch (MakelabButton)
+2023-04-25 08:53:27.710 Status: dzVents: Info: Handling events for: "MakelabButton", value: "On"
+2023-04-25 08:53:27.710 Status: dzVents: Info: BUTTONCONTROL_MQTT_AD: ------ Start internal script: buttoncontrol_mqtt_ad: Device: "MakelabButton (MQTTADGateway)", Index: 41
+2023-04-25 08:53:27.710 Status: dzVents: Info: BUTTONCONTROL_MQTT_AD: Device changed: name=MakelabButton, unique_id=BM001, state=On
+2023-04-25 08:53:27.710 Status: dzVents: Info: BUTTONCONTROL_MQTT_AD: ------ Finished buttoncontrol_mqtt_ad
+2023-04-25 08:53:27.603 Debug: MQTTADGateway: topic: domoticz/button/makelab/state, message: {"ON"}
+2023-04-25 08:53:27.723 Debug: MQTTADGateway: topic: domoticz/out, message: {
+2023-04-25 08:53:27.723 "Battery" : 255,
+2023-04-25 08:53:27.723 "LastUpdate" : "2023-04-25 08:53:27",
+2023-04-25 08:53:27.723 "RSSI" : 12,
+2023-04-25 08:53:27.723 "description" : "",
+2023-04-25 08:53:27.723 "dtype" : "Light/Switch",
+2023-04-25 08:53:27.723 "hwid" : "6",
+2023-04-25 08:53:27.723 "id" : "BM001",
+2023-04-25 08:53:27.723 "idx" : 41,
+2023-04-25 08:53:27.723 "name" : "MakelabButton",
+2023-04-25 08:53:27.723 "nvalue" : 1,
+2023-04-25 08:53:27.723 "stype" : "Switch",
+2023-04-25 08:53:27.723 "svalue1" : "0",
+2023-04-25 08:53:27.723 "switchType" : "Push On Button",
+2023-04-25 08:53:27.723 "unit" : 1
+2023-04-25 08:53:27.723 } 
+]]--
+-- IDX of the device
+local IDX_BUTTON = 41
+return {
+	on = { devices = { IDX_BUTTON } },
+	logging = { level = domoticz.LOG_INFO, marker = 'BUTTONCONTROL_MQTT_AD', },
+	execute = function(domoticz, device)
+		domoticz.log(string.format('Device changed: name=%s, unique_id=%s, state=%s', 
+		    device.name, device.deviceId, device.state))
+	end
+}

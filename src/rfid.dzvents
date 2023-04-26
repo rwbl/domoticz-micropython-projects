@@ -1,0 +1,31 @@
+-- rfid.dzvents
+-- Handle the rfid text device state change triggered by the PicoW webserver submitting HTTP API/JSOM requests.
+-- 20230318 rwbl
+--[[
+2023-03-19 11:37:33.558 Status: dzVents: Info: LOG_PICOW_RFID: ------ Start internal script: picow_rfid: Device: "RFID UID (VirtualSensors)", Index: 27
+2023-03-19 11:37:33.558 Status: dzVents: Info: LOG_PICOW_RFID: Device RFID UID: statechange=1446518016
+2023-03-19 11:37:33.558 Status: dzVents: Info: LOG_PICOW_RFID: Card UID 1446518016 is WRONG.
+2023-03-19 11:37:33.558 Status: dzVents: Info: LOG_PICOW_RFID: ------ Finished picow_rfid
+2023-03-19 11:37:42.775 Status: dzVents: Info: Handling events for: "RFID UID", value: "879739599"
+2023-03-19 11:37:42.775 Status: dzVents: Info: LOG_PICOW_RFID: ------ Start internal script: picow_rfid: Device: "RFID UID (VirtualSensors)", Index: 27
+2023-03-19 11:37:42.775 Status: dzVents: Info: LOG_PICOW_RFID: Device RFID UID: statechange=879739599
+2023-03-19 11:37:42.775 Status: dzVents: Info: LOG_PICOW_RFID: Card UID 879739599 is OK.
+2023-03-19 11:37:42.775 Status: dzVents: Info: LOG_PICOW_RFID: ------ Finished picow_rfid 
+]]--
+-- Domoticz IDX of the text device state is set by the PicoW webserver
+IDX_DEVICE  = 27
+UID_CARD_A = '879739599'
+LOG_MARKER = "LOG_PICOW_RFID"
+return {
+	on = { devices = { IDX_DEVICE } },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	execute = function(domoticz, device)
+		domoticz.log(string.format('Device %s: statechange=%s', device.name, device.state), domoticz.LOG_INFO)
+		local uid = device.state
+		if uid == UID_CARD_A then
+		    domoticz.log(string.format('Card UID %d is OK.', uid))
+        else
+		    domoticz.log(string.format('Card UID %d is WRONG.', uid))
+		end
+	end
+}

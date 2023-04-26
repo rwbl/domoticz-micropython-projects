@@ -1,0 +1,103 @@
+--[[
+File: lcdtextinput.dzvents
+Date: 20230425
+Author: Robert W.B. Linn
+Based on this solution: https://www.domoticz.com/forum/viewtopic.php?p=293175#p293175 (Thanks)
+Create a Domoticz GUI input widget for text. The widget uses a text device.
+The text is sent to the Pico W web server and sets the text of up-to 4 lines (LCD rows 0-3).
+As the event is running on the Domoticz system, there is no need to add an IP address to the HTML form POST action.
+See below variable widgetinputnumberhtml.
+]]--
+local URL_SERVER      = 'http://webserver-ip'
+-- IDX of the switch which enables to init the textinput device
+local IDX_SWITCH = 16
+-- IDX of the text device which is functioning as an input device
+local IDX_TEXT_DEVICE = 36
+local INPUT_LABEL = "Text:"
+-- Optional store the text in a user var (NOT USED)
+local IDX_UV = 1
+local PROJECT       = 'LCDWIDGETINPUT'
+local RES_HTTP      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+-- Create the HTML code for the text device containing input field.
+-- This is a form submitting a POST request on the localhost.
+-- The input field has type text. The label is commented out. The input field has default with 200px.
+-- The POST data contains all parameter as defined in the text device Domoticz HTTP API/JSON documentation.
+local widgetinputhtml = [[<!-- Widget Input for Text -->
+ <iframe name="dummyframe" id="dummyframe" style="display: none">
+ </iframe>
+ <form method="POST" action="/json.htm" target="dummyframe">
+	<input type="hidden" id="" name="type" value="command"> 
+	<input type="hidden" id="" name="param" value="udevice"> 
+	<input type="hidden" id="" name="idx" value="{IDX}"
+	<input type="hidden" id="" name="nvalue" value="0"> 
+	<!-- <label for="fname">{LABEL}</label><br> -->
+	<input type="text" id="fname" name="svalue" value="{VALUE}" style="width: 200px;"> 
+    <input type="image" class="btnsmall" alt="Save">
+</form>]]
+-- Set the content of the text device.
+-- The content is HTML code (see previous var widgetinputhtml) with the value.
+-- Ensure to remove the newline characters.
+local function setTextDevice(domoticz, value)
+    local text = widgetinputhtml
+    text = string.gsub(text, "{IDX}", IDX_TEXT_DEVICE)
+    text = string.gsub(text, "{LABEL}", string.format("%s", INPUT_LABEL))
+    text = string.gsub(text, "{VALUE}", string.format("%s", value))
+    text = string.gsub(text, "\n", "")
+    domoticz.log(text)
+    -- Silent update of the text device to avoid triggering device change.
+    domoticz.devices(IDX_TEXT_DEVICE).updateText(text).silent()
+end
+local function updateLCD(domoticz, text)
+    local postdata = {}
+    postdata['text'] = text
+    domoticz.openURL({
+        url = URL_SERVER,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = postdata,
+        callback = RES_HTTP,
+       })     
+end
+return {
+	on = {
+		devices = { IDX_SWITCH, IDX_TEXT_DEVICE },
+		httpResponses = { RES_HTTP } 
+	},
+	logging = {
+		level = domoticz.LOG_DEBUG, marker = LOG_MARKER,
+	},
+	-- Handle device changes
+	execute = function(domoticz, item)
+        -- Handle switch which inits the text of the text device with html
+        if item.isDevice then
+            device = item 
+            if device.idx == IDX_SWITCH then
+                setTextDevice(domoticz, '')
+            end
+            
+            -- Handle changes of the text device triggered by the save button of the HTML form.
+            -- The text device content is the inputted value without HTML code.
+            if device.idx == IDX_TEXT_DEVICE then
+                -- Get the state of the input device which is the text put in (without HTML code)
+                -- Device TextInputDevice changed, state=Line1,Line2,Line3,Line4
+            	domoticz.log(string.format('Device change: name=%s, state=%s', device.name, device.state))
+            
+                -- Update the text device with the new value embedded in the html code
+                setTextDevice(domoticz, device.state)
+            
+                -- Update the LCD display via HTTP POST request to the Pico W web server
+                updateLCD(domoticz, device.state)
+            end
+        end
+	    
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}

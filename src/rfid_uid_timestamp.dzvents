@@ -1,0 +1,74 @@
+-- rfid_uid_timestamp.dzvents
+-- Handle the rfid text device state change triggered by the PicoW webserver submitting HTTP API/JSOM requests.
+-- 20230320 rwbl
+--[[
+Domoticz Log
+2023-03-20 10:15:19.647 Status: dzVents: Info: Handling events for: "RFID UID", value: "879739599"
+2023-03-20 10:15:19.647 Status: dzVents: Info: LOG_PICOW_RFID: ------ Start internal script: picow_rfid: Device: "RFID UID (VirtualSensors)", Index: 27
+2023-03-20 10:15:19.647 Status: dzVents: Info: LOG_PICOW_RFID: Device RFID UID: statechange=879739599
+2023-03-20 10:15:19.647 Status: dzVents: Info: LOG_PICOW_RFID: ------ Finished picow_rfid
+2023-03-20 10:15:19.648 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-03-20 10:15:19.722 Status: dzVents: Info: Handling events for: "RFID UID", value: "879739599,2023-03-20 10:15:19"
+2023-03-20 10:15:19.722 Status: dzVents: Info: LOG_PICOW_RFID: ------ Start internal script: picow_rfid: Device: "RFID UID (VirtualSensors)", Index: 27
+2023-03-20 10:15:19.722 Status: dzVents: Info: LOG_PICOW_RFID: Device RFID UID: statechange=879739599,2023-03-20 10:15:19
+2023-03-20 10:15:19.722 Status: dzVents: Info: LOG_PICOW_RFID: Card UID 879739599 is OK (879739599,2023-03-20 10:15:19).
+2023-03-20 10:15:19.722 Status: dzVents: Info: LOG_PICOW_RFID: ------ Finished picow_rfid 
+]]--
+-- Domoticz IDX of the text device state is set by the PicoW webserver
+IDX_DEVICE  = 27
+-- Card UID to verify
+UID_CARD_A = '879739599'
+-- Log marker
+LOG_MARKER = "LOG_PICOW_RFID"
+-- Add a timestamp to the device state to ensure the state is added to the log.
+-- If the uid of the device is not changed, no log entry is set.
+-- Note the use of openurl with http api/json get request.
+-- This updates the text of the device immediate, whereas dzvents updateText needs more time.
+-- Not used as too slow
+-- device.updateText = string.format('%s,%s', device.text, domoticz.time.rawDateTime)
+local function UpdateDevice(domoticz, device)
+    -- Define the new svalue with uid,timestamp
+    local svalue = string.format('%s,%s', device.text, domoticz.time.rawDateTime)
+    -- Define the url for the http api/json get request
+    local url = string.format('http://localhost:8080/json.htm?type=command&param=udevice&idx=%d&nvalue=0&svalue=%s', device.idx, svalue)
+    -- Replace space by %20 in the url
+    url = string.gsub(url, ' ', '%%20')
+    -- Submit the http get request
+    domoticz.openURL(url)
+    -- Optional return the new device svalue
+    return svalue
+end
+-- Handle two device state changes:
+-- First state change triggered by the PicoW webserver with the card UID only.
+-- Second state change by this event after adding the timestamp to the UID to add as device log entry uid,timestamp.
+-- If the card UID only is used, no device log entry is added.
+-- By using a timestamp Domoticz notices a text change and adds a log entry.
+return {
+	on = { 
+	    devices = { IDX_DEVICE } 
+	},
+	logging = { 
+	    level = domoticz.LOG_INFO, marker = LOG_MARKER 
+    },
+	execute = function(domoticz, device)
+		domoticz.log(string.format('Device %s: statechange=%s', device.name, device.state), domoticz.LOG_INFO)
+		-- Check if the device state contains the timestamp uid,timestamp (=seconds statechange)
+		if string.find(device.state, ",") ~= nil then
+		    -- Split the string by comma, i.e. uid and timestamp
+    		local t = domoticz.utils.stringSplit(device.state, ',')
+    		-- Get the uid as first table entry 
+    		local uid = t[1]
+            -- Check the uid for any action
+    		if uid == UID_CARD_A then
+    		    domoticz.log(string.format('Card UID %d is OK (%s).', uid, device.state))
+    		    -- Trigger any action ...
+            else
+    		    domoticz.log(string.format('Card UID %s is WRONG.', uid))
+    		end
+        -- No comma found in the device state, i.e. uid only (=first state change)
+	    -- Add the timestamp to the device state: uid,timestamp
+		else
+		    UpdateDevice(domoticz, device)
+        end
+	end
+}
