@@ -10,21 +10,21 @@ The intention is to provide some practical guidance, inspire ideas .. but not to
 
 ## Prerequisites
 It is expected to have basic knowledge of 
-* Domoticz Home Automation System
-* Domoticz Automation Event system dzVents & Lua
-* Programming languages Python and MicroPython
-* Raspberry Pi Pico / Pico W and ESP microcontrollers
-* Thonny Integrated Development Environment
-* JavaScript Object Notation (JSON)
+* Domoticz Home Automation System.
+* Domoticz Automation Event system dzVents & Lua.
+* Programming languages Python and MicroPython.
+* Raspberry Pi Pico / Pico W and ESP microcontrollers.
+* Thonny Integrated Development Environment.
+* JavaScript Object Notation (JSON).
 * Message Queuing Telemetry Transport MQTT and MQTT Autodiscover.
 
 ## Remarks
 * This is a working document = conceptual changes & new idea’s whilst progressing.
 * There might be better solutions = changes depend on the author’s learning curve.
-* To-Do actions are tagged with [TODO] and captured in the file TODO.md.
+* To-Do actions are tagged with [TODO].
 * Hard- and Software versions are subject to change.
 * Drawings are created with Fritzing.
-* Sources included in this document - latest sources this GitHub repository folder src.
+* Sources included in this document - latest sources this GitHub repository folder _src_.
 
 ## Concept
 ![image](https://user-images.githubusercontent.com/47274144/234501616-22edc8e4-43ed-4669-8625-d52e6e05d669.png)
