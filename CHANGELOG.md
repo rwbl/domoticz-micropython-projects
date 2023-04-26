@@ -3,7 +3,7 @@
 ## 20230425
 * NEW: Project Button Control MQTT Autodiscover.
 * NEW: Project DHT22 Temperature & Humidity MQTT Autodiscover.
-* NEW: Project LCD Text Input.
+* NEW: Project LCD Text Input. Inspired by [this](https://www.domoticz.com/forum/viewtopic.php?p=293175#p293175) post. Thanks for sharing.
 * NEW: Config added WARNING constant.
 * NEW: Server added function connect2 to connect to the network without socket.
 * NEW: Appendix MQTT Autodiscover.
