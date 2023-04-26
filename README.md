@@ -42,6 +42,7 @@ The MCU acts as a
 The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this guide the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 11 (bullseye).
 
 The Domoticz hardware and related devices are added, either manually via the “Dummy Hardware Controller” or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
+
 _Note_
 Whilst starting to write this guide, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
 
