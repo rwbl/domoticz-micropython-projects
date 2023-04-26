@@ -1,12 +1,10 @@
 """
 File:	server.py
-Date:	20230413
+Date:	20230425
 Author:	Robert W.B. Linn
-
 :description
 Class to manage the PicoW RESTful webserver.
 Commands set via HTTP GET or POST requests with HTTP response JSON object.
-
 :examples
 ***HTTP GET***
 LED ON: http://picow-ip/led1/on with HTTP response: {"status": "OK", "title": "/led1/on", "message": "On"}
@@ -23,39 +21,35 @@ Network client connected from client-ip
 HTTP Command /led1/on
 HTTP Response {"title": "/led1/on", "message": "On", "status": "OK"}
 Network connection closed
-
 ***HTTP POST***
-LED ON: curl -v -H "Content-Type: application/json" -d "{\"state\":1}" http://picow-ip
+LED ON: curl -v -H "Content-Type: application/json" -d "{\"state\":1}" http://webserver-ip
 {"status": "OK", "title": {"state": 1}, "message": 1}
-LED OFF: curl -v -H "Content-Type: application/json" -d "{\"state\":0}" http://picow-ip
+LED OFF: curl -v -H "Content-Type: application/json" -d "{\"state\":0}" http://webserver-ip
 {"status": "OK", "title": {"state": 0}, "message": 0}
 In case of error (like JSON object not valid = can be be parsed), the HTTP response:
 HTTP Response: {"status": "ERROR", "title": "{state:vvv}", "message": "Unknown command."}
 with console log [ERROR] HTTP POST request not valid (ValueError).
-
 :notes
 When using curl ensure to escape the " to \" in the JSON object.
-
 :log
 LEDControl Network v20230310
 Network connected OK
-Network IP picow-ip
+Network IP webserver-ip
 Network listening on ('0.0.0.0', 80)
-Network client connected from client-ip
+Network client connected from NNN.NNN.NNN.94
 HTTP Command {'state': 1}
 HTTP Response {"status": "OK", "title": {"state": 1}, "message": 1}
 Network connection closed
-Network client connected from client-ip
+Network client connected from NNN.NNN.NNN.94
 HTTP Command {'state': 0}
 HTTP Response {"status": "OK", "title": {"state": 0}, "message": 0}
 Network connection closed
-Network client connected from client-ip
+Network client connected from NNN.NNN.NNN.94
 [ERROR] HTTP POST request not valid (ValueError).
 HTTP Command {state:vvv}
 HTTP Response {"status": "ERROR", "title": "{state:vvv}", "message": "Unknown command."}
 Network connection closed
 """
-
 # Libraries
 import network
 import urequests
@@ -63,24 +57,20 @@ import socket
 import time
 from machine import Pin
 import json
-
 """
 Class Server
 """
 class Server:
     # Constants
     NAME = 'Server'
-    VERSION = 'v20230321'
-
+    VERSION = 'v20230425'
     CRLF = chr(13) + chr(10)
     SPACE = chr(32)
-
     # Domoticz
     # HTTP response JSON keys
     KEY_STATE	= 'status'
     KEY_TITLE	= 'title'
     KEY_MESSAGE	= 'message'
-
     # Messages used for HTTP response
     STATE_OK			= 'OK'
     STATE_ERR			= 'ERROR'
@@ -89,7 +79,6 @@ class Server:
     MESSAGE_CMD_UNKNOWN	= 'Unknown command.'
     MESSAGE_ON			= 'On'
     MESSAGE_OFF			= 'Off'
-
     def __init__(self, wifi_ssid, wifi_password, STATUS_PIN="LED", DEBUG=True):
         """
         Init the network with defaults.
@@ -109,11 +98,9 @@ class Server:
         self.debug = DEBUG
         self.wifi_ssid = wifi_ssid
         self.wifi_password = wifi_password
-
         # Create the onboard LED object to indicate controller is up and network connected
         self.ledstatus = Pin(STATUS_PIN, Pin.OUT)
         self.ledstatus.off()
-
     def log(self, msg):
         """
         Log to the console if debug flag is true.
@@ -123,13 +110,11 @@ class Server:
         """
         if self.debug:
             print(msg)
-
     def connect(self):
         """
         Connect to the network using the class SSID and password.
-
+        If connected start listening for incoming connections.
         :param None
-
         :return object server
             Server object.
         
@@ -143,7 +128,6 @@ class Server:
             wlan = network.WLAN(network.STA_IF)
             wlan.active(True)
             wlan.connect(self.wifi_ssid, self.wifi_password)
-
             # Network connection
             self.log(f'Network waiting for connection...')
             max_wait = 10
@@ -152,7 +136,6 @@ class Server:
                     break
                 max_wait -= 1
                 time.sleep(1)
-
             if wlan.status() != 3:
                 self.ledstatus.off()
                 raise RuntimeError('[ERROR] Network connection failed!')
@@ -161,13 +144,10 @@ class Server:
                 self.log(f'Network connected OK')
                 status = wlan.ifconfig()
                 self.log(f'Network IP ' + status[0] )
-
             # Network Get address
             addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-
             # Network Create the server socket
             server = socket.socket()
-
             # Option to reuse addr to avoid error EADDRINUSE
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             
@@ -181,7 +161,38 @@ class Server:
             self.ledstatus.off()
             cl.close()
             raise RuntimeError('[ERROR] Network connection closed')
-
+    def connect2(self):
+        """
+        Connect to the network using the class SSID and password.
+        :param None
+        :example
+            # Create network object
+            network = Server(config.WIFI_SSID, config.WIFI_PASSWORD)
+        """
+        try:
+            wlan = network.WLAN(network.STA_IF)
+            wlan.active(True)
+            wlan.connect(self.wifi_ssid, self.wifi_password)
+            # Network connection
+            self.log(f'Network waiting for connection...')
+            max_wait = 10
+            while max_wait > 0:
+                if wlan.status() < 0 or wlan.status() >= 3:
+                    break
+                max_wait -= 1
+                time.sleep(1)
+            if wlan.status() != 3:
+                self.ledstatus.off()
+                raise RuntimeError('[ERROR] Network connection failed!')
+            else:
+                self.ledstatus.on()
+                self.log(f'Network connected OK')
+                status = wlan.ifconfig()
+                self.log(f'Network IP ' + status[0] )
+        except OSError as e:
+            self.ledstatus.off()
+            cl.close()
+            raise RuntimeError('[ERROR] Network connection closed')
     def parse_get_request(self, request):
         """
         Parse the command from the HTTP GET Request.
@@ -199,7 +210,6 @@ class Server:
             
         :return int status
             0 = Error, 1 = OK
-
         :example
             # Parse the get data. In case of error, the status is 0.
             cmd, status = network.parse_get_request(request)
@@ -234,23 +244,19 @@ class Server:
         The last line of the HTTP request contains the command + data.
         The HTTP request is decoded and split as a string list.
         The last line is a JSON object with key:value pair(s).
-
         :param string request
             HTTP request
-
         :return string command
             Command as JSON key:value pair(s), i.e. {"led":1}
             
         :return int status
             0 = Error, 1 = OK
-
         :example
             # Parse the post data. In case of error, the status is 0.
             data, status = network.parse_get_request(request)
         """
         status = 0
         cmd = self.MESSAGE_CMD_UNKNOWN
-
         # Split the decoded request string into a list
         data = str(request.decode()).split(self.CRLF)
         
@@ -272,7 +278,6 @@ class Server:
         
         # Return the command as JSON object, i.e. HTTP Command: {'state': 'on'}
         return cmd, status
-
     def get_client_connection(self, server):
         """
         Get the client connection.
@@ -284,7 +289,6 @@ class Server:
         
         :return string data
             The requested data format depends on the request
-
         :example
             cl, request = network.get_client_connection(server)
         """
@@ -296,7 +300,6 @@ class Server:
         request = cl.recv(1024)
         # Return cl and the request data
         return cl, request
-
     def send_response(self, cl, response, close):
         """
         Send the response to the client, i.e. Domoticz, curl etc. as JSON object.
@@ -308,7 +311,6 @@ class Server:
         :param bool close
         """
         self.log(f'HTTP Response={json.dumps(response)}')
-
         # Important to have a blank line prior JSON response string
         # Note the use of json.dumps for the response
         cl.send('HTTP/1.1 200 OK'+self.CRLF+'content-type: application/json'+self.CRLF+self.CRLF+json.dumps(response))
@@ -317,11 +319,9 @@ class Server:
         if close == True:
             cl.close()
             self.log(f'Network connection closed')
-
     def send_get_request(self, url):
         """
         Network submit http get request to the domoticz server.
-
         :param string url
             URL of the HTTP request
         
@@ -354,11 +354,9 @@ class Server:
             # print(f'[ERROR] {e}, {r.content.decode()}')
             raise Exception(f'[ERROR] {e}, {r.content.decode()}')
         return status, content 
-
     def send_post_request(self, url, postdata):
         """
         Network submit http post request to the domoticz server.
-
         :param string url
             URL of the HTTP request
             
@@ -384,5 +382,3 @@ class Server:
             print(f'[ERROR] Sending data {e}')
             # raise Exception('Network Connection failed.')
         return status 
-
-

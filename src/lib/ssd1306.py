@@ -1,23 +1,7 @@
-"""
-ssd1306ex.py
-20230324
-MicroPython SSD1306 OLED driver, I2C and SPI interfaces
-Forked from https://github.com/stlehmann/micropython-ssd1306. Many thanks to the author.
-There is also a MicroPython lib holding this library: https://github.com/micropython/micropython-lib.
-Enhancements by rwbl
-col and row definitions - for writing text, the col width is 8, row height is 16.
-text_col_row(self, text, col, row) - Write text at row 0-3 and col 0-15.
-text_block(self, block, title, value) - Write title & value in a text block. Max 6 text blocks.
-text_rows(self, row1="", row2="", row3="", row4="") - Display text at col 0 on rows 1 to 4.
-clear(self) - Clear the display.
-Notes
-A character has a size 8px width x 16px height. Max chars per row is 16, max rows is 4.
-The starting index for the cols and rows is 0.
-"""
-# Imports
+# MicroPython SSD1306 OLED driver, I2C and SPI interfaces
 from micropython import const
 import framebuf
-# Register definitions
+# register definitions
 SET_CONTRAST = const(0x81)
 SET_ENTIRE_ON = const(0xA4)
 SET_NORM_INV = const(0xA6)
@@ -35,21 +19,6 @@ SET_DISP_CLK_DIV = const(0xD5)
 SET_PRECHARGE = const(0xD9)
 SET_VCOM_DESEL = const(0xDB)
 SET_CHARGE_PUMP = const(0x8D)
-# Default I2C address
-I2C_ADDRESS = const(0x3C)
-# Default pin numbers for SDA and SCL
-PIN_SDA = const(0)	# GP0 (Pin #1 , I2C0 SDA)
-PIN_SCL = const(1)	# GP1 (Pin #2 , I2C0 SCL)
-# Display default pixel width and height
-DISPLAY_WIDTH = const(128)
-DISPLAY_HEIGHT = const(64)
-# Text col and row definitions. Width & height in px
-COL_WIDTH = const(8)
-ROW_HEIGHT = const(16)
-COL_MIN = const(0)
-COL_MAX = const(15)
-ROW_MIN = const(0)
-ROW_MAX = const(3)
 # Subclassing FrameBuffer provides support for graphics primitives
 # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
 class SSD1306(framebuf.FrameBuffer):
@@ -95,7 +64,6 @@ class SSD1306(framebuf.FrameBuffer):
             SET_DISP | 0x01,
         ):  # on
             self.write_cmd(cmd)
-        # Clear the display by filling 0
         self.fill(0)
         self.show()
     def poweroff(self):
@@ -121,78 +89,6 @@ class SSD1306(framebuf.FrameBuffer):
         self.write_cmd(0)
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
-        
-    def text_col_row(self, text, col, row):
-        """
-        Write text at row 0-3 and col 0-15.
-        """
-        if not COL_MIN <= col <= COL_MAX:
-            raise RuntimeError(f'Col index {col} out of range 0-15')
-        if not ROW_MIN <= row <= ROW_MAX:
-            raise RuntimeError(f'Row index {row} out of range 0-3')
-        self.text(text, col * COL_WIDTH, row * ROW_HEIGHT)
-    def text_block(self, block, title, value):
-        """
-        Set the title and value for a block.
-        There are two rows: top for blocks 1-3 at rows 0,1 and bottom for blocks 4-6 at rows 2,3.
-        The three block cols start at position 1, 6, 11.
-        The first (position 0) and last (position 15) col are spaces.
-        Between each block there is also a space (positions 5, 10).
-        
-        : param int block
-            Block number 1-6. Blocks 1-3 are top row, 4-6 bottom row.
-            
-        :param string title
-            Block title.
-            
-        :param int|string value
-            The value to be display (as string) underneath the block title.
-        """
-        
-        # Convert the value to a string
-        value = str(value)
-        # Check the text length. Max length of text in a block is 4.
-        if len(title) > 4:
-            title = title[0:4]
-        if len(value) > 4:
-            value = value[0:4]
-        # Select each of the blocks and set the title & value
-        if block == 1:
-            self.text_col_row(title, 1, 0)
-            self.text_col_row(value, 1, 1)
-        elif block == 2:
-            self.text_col_row(title, 6, 0)
-            self.text_col_row(value, 6, 1)
-        elif block == 3:
-            self.text_col_row(title, 11, 0)
-            self.text_col_row(value, 11, 1)
-        elif block == 4:
-            self.text_col_row(title, 1, 2)
-            self.text_col_row(value, 1, 3)
-        elif block == 5:
-            self.text_col_row(title, 6, 2)
-            self.text_col_row(value, 6, 3)
-        elif block == 6:
-            self.text_col_row(title, 11, 2)
-            self.text_col_row(value, 11, 3)
-        else:
-            print(f'[ERROR] Block {block} out of range 1-6')
-    def text_rows(self, row1="", row2="", row3="", row4=""):
-        """
-        Display text at col 0 on rows 1 to 4.
-        """
-        self.fill(0)
-        self.text_col_row(row1, 0, 0)
-        self.text_col_row(row2, 0, 1)
-        self.text_col_row(row3, 0, 2)
-        self.text_col_row(row4, 0, 3)
-        self.show()
-    def clear(self):
-        """
-        Clear the display.
-        """
-        self.fill(0)
-        self.show()
 class SSD1306_I2C(SSD1306):
     def __init__(self, width, height, i2c, addr=0x3C, external_vcc=False):
         self.i2c = i2c
