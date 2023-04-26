@@ -19,21 +19,11 @@ The class is converted from Arduino CPP code running fine on an Aduino Nano.
 Both MicroPython and CPP logs are the same, i.e. same bits send for the messages.
 Need to explore why the MicroPython code is not running on the Pico W? May a Pico frequency issue. No idea?
 
-## NEW: Explore MQTT Auto Discovery
-MicroPython MQTT client on the embedded hardware which can publish discovery messages for the connected component(s) and subscribes to associated Domoticz device(s) messages.
-See Domoticz forum [post](https://www.domoticz.com/forum/viewtopic.php?p=302037#p302037).
-### Status
-Started to explore using a DHT22 temperature sensor connected to a Raspberry Pi Pico W.
-See Domoticz forum [post](https://www.domoticz.com/forum/viewtopic.php?f=82&t=40249).
-
-## UPD: Network Connection
-Connecting the Pico W first time, it (sometimes) takes more then 5 tries to get a network connection.
-Explore why.
-### Status
-Not started.
-
-## UPD: Improve Network Errors
-Example: URL incorrect.
-b'<html><head><title>Not Found</title></head><body><h1>404 Not Found</h1></body></html>'
+## NEW: Smart Home IOT Model
+Build a Smart Home IOT Model (SHIM) with various sensors&actuators controlled by Domoticz.
+The SHIM will have at least 1 microcontroller Raspberry Pi Pico W acting as a web server & mqtt autodiscover client.
+Additional microcontroller could be Raspberry Pi Pico connected to the Pico W.
+Communication between SHIM and Domoticz via mqtt messaging with mqtt autodiscover topics.
+The SHIM could be a LEGO house (from LEGO City) , wooden house, makerbeam frame or meccano frame.
 ### Status
 Not started.

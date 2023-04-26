@@ -1,7 +1,18 @@
 # domoticz-micropython-projects - CHANGELOG
 
+## 20230425
+* NEW: Project Button Control MQTT Autodiscover.
+* NEW: Project DHT22 Temperature & Humidity MQTT Autodiscover.
+* NEW: Project LCD Text Input.
+* NEW: Config added WARNING constant.
+* NEW: Server added function connect2 to connect to the network without socket.
+* NEW: Appendix MQTT Autodiscover.
+* UPD: Renamed chapters Projects, ESP8266 to Pico W Projects, ESP8266 Projects.
+* UPD: Renamed project ButtonSwitchLight to ButtonControl.
+* UPD: Various minor changes.
+
 ## 20230415
-* NEW: Published first version.
+* NEW: Published first version on GitHub and the [Domoticz Forum](https://www.domoticz.com/forum/viewtopic.php?f=38&t=40244).
 
 ## 20230101
 * NEW: Started with some first ideas.
