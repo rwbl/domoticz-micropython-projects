@@ -1,6 +1,6 @@
 # domoticz-micropython-projects - CHANGELOG
 
-## 20230425
+## 20230427
 * NEW: Project Button Control MQTT Autodiscover.
 * NEW: Project DHT22 Temperature & Humidity MQTT Autodiscover.
 * NEW: Project LCD Text Input. Inspired by [this](https://www.domoticz.com/forum/viewtopic.php?p=293175#p293175) post. Thanks for sharing.
