@@ -39,12 +39,12 @@ The MCU acts as a
 *	Web Server by sending HTTP GET/POST requests to connected clients or receiving HTTP GET/POST requests from connected clients,
 *	MQTT Autodiscover Client by publishing device configuration or state messages and subscribing to state messages.
 
-The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this guide the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 11 (bullseye).
+The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this book the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 11 (bullseye).
 
 The Domoticz hardware and related devices are added, either manually via the “Dummy Hardware Controller” or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
 
 _Note_
-Whilst starting to write this guide, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
+Whilst starting to write this book, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
 
 The Automation events are developed in dzVents (Domoticz Easy Events).
 Event scripting with dzVents is well integrated in Domoticz and good documentation with many examples is available.
@@ -52,7 +52,7 @@ The Domoticz editor (GUI > Setup > More Options > Events) is used to develop and
 
 In addition, Node-RED and MQTT broker mosquitto (with clients mosquitto_pub and mosquitto_sub) are running on the Raspberry Pi.
 
-The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.1 (build 15092 or higher) is set (at the time of writing).
+The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.1 (build 15200 or higher) is set (at the time of writing).
 
 ## Components
 * 1x Raspberry Pi Pico W 2022.
@@ -62,11 +62,11 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x LCD 20x4 - LCD display (I2C) 20 columns & 4 rows.
 * 1x TM1637 - 4-digit 7-segment LED display (I2C).
 * 1x Servo Motor - Tower Pro Micro Servo 9g SG90.
-* 1x RFID-RC522 – Reader for MIFARE RFID Cards and Tokens.
+* 1x RFID-RC522 - Reader for MIFARE RFID Cards and Tokens.
 * 1x TM1638 LED&KEY - 8x 7-segment decimal LED component with 8x individual LEDs and 8x push buttons.
 * 1x PIR Motion Sensor.
 * 1x Potentiometer.
-* 2x DS18B20 –  1-wire digital thermometers.
+* 2x DS18B20 - 1-wire digital thermometers.
 and more …
 
 ## Credits
