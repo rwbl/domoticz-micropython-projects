@@ -1,0 +1,92 @@
+--[[
+File:   steppermotor.dzvents
+Date:   20230506
+Author: Robert W.B. Linn
+:description
+Turn the stepper motor stepwise in the direction clockwise or anticlockwise by using a Domoticz Selector Switch.
+The selector switch has 3 levels 0, 10, 20.
+The level 0, Off, is not used. Level 10 is Step Clockwise and level 20 is Step Anti-Clockwise.
+This means the selector switch shows two buttons Step Clockwise and Step Anti-Clockwise.
+Each step moves the stepper motor in the direction by an angle of 5°.
+The angle is hardcoded in the event script but could be set flexible via a User Variable.
+:log
+2023-05-06 10:53:22.370 Status: User: admin initiated a switch command (43/Stepper/Set Level)
+2023-05-06 10:53:22.473 Status: dzVents: Info: Handling events for: "Stepper", value: "Step Clockwise"
+2023-05-06 10:53:22.473 Status: dzVents: Info: LOG_STEPPER: ------ Start internal script: steppermotor: Device: "Stepper (VirtualSensors)", Index: 43
+2023-05-06 10:53:22.473 Status: dzVents: Info: LOG_STEPPER: device=Stepper, state=Step Clockwise, level=10
+2023-05-06 10:53:22.473 Status: dzVents: Info: LOG_STEPPER: {["angle"]=5}
+2023-05-06 10:53:22.473 Status: dzVents: Info: LOG_STEPPER: ------ Finished steppermotor
+2023-05-06 10:53:22.473 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 10:53:22.864 Status: dzVents: Info: Handling httpResponse-events for: "RES_STEPPER"
+2023-05-06 10:53:22.864 Status: dzVents: Info: LOG_STEPPER: ------ Start internal script: steppermotor: HTTPResponse: "RES_STEPPER"
+2023-05-06 10:53:22.865 Status: dzVents: Info: LOG_STEPPER: status=OK, title={'angle': 5}, message=5
+2023-05-06 10:53:22.865 Status: dzVents: Info: LOG_STEPPER: ------ Finished steppermotor
+2023-05-06 10:53:25.790 Status: User: admin initiated a switch command (43/Stepper/Set Level)
+2023-05-06 10:53:25.841 Status: dzVents: Info: Handling events for: "Stepper", value: "Step Anti-Clockwise"
+2023-05-06 10:53:25.841 Status: dzVents: Info: LOG_STEPPER: ------ Start internal script: steppermotor: Device: "Stepper (VirtualSensors)", Index: 43
+2023-05-06 10:53:25.841 Status: dzVents: Info: LOG_STEPPER: device=Stepper, state=Step Anti-Clockwise, level=20
+2023-05-06 10:53:25.841 Status: dzVents: Info: LOG_STEPPER: {["angle"]=-5}
+2023-05-06 10:53:25.841 Status: dzVents: Info: LOG_STEPPER: ------ Finished steppermotor
+2023-05-06 10:53:25.842 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 10:53:26.192 Status: dzVents: Info: Handling httpResponse-events for: "RES_STEPPER"
+2023-05-06 10:53:26.192 Status: dzVents: Info: LOG_STEPPER: ------ Start internal script: steppermotor: HTTPResponse: "RES_STEPPER"
+2023-05-06 10:53:26.192 Status: dzVents: Info: LOG_STEPPER: status=OK, title={'angle': -5}, message=-5
+2023-05-06 10:53:26.192 Status: dzVents: Info: LOG_STEPPER: ------ Finished steppermotor 
+]]--
+-- Domoticz device Selector Switch
+local IDX_STEPPER_SELECTOR = 43
+-- Pico W web server IP address
+local HTTP_URL       = 'http://webserver-ip'
+-- HTTP_POST_DATA   = '{"angle":90}'
+-- Callback and logging
+local PROJECT       = 'STEPPER'
+local HTTP_RES      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+-- Stepper
+local ANGLE_MOVE = 5
+-- Post Data to the Pico W Webserver.
+-- The data is a JSON object with the servo angle to move: {"angle":NNN}
+local function HTTPPost(domoticz, angle)
+    local data = {}
+    data['angle'] = angle
+    domoticz.log(data)
+    domoticz.openURL({
+        url = HTTP_URL,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = data,
+        callback = HTTP_RES,
+       }) 
+end
+return {
+    -- Listen to dimmer device changes and HTTP responses
+	on = { 
+	    devices = { IDX_STEPPER_SELECTOR }, 
+	    httpResponses = { HTTP_RES } 
+    },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+		    -- Check which device
+            if item.idx == IDX_STEPPER_SELECTOR then
+    		    domoticz.log(string.format("device=%s, state=%s, level=%d", item.name, item.state, item.level))
+                local angle
+                if item.level == 10 then angle = ANGLE_MOVE end
+                if item.level == 20 then angle = ANGLE_MOVE * -1 end
+                HTTPPost(domoticz, angle)
+            end
+        
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {"status": "OK", "title": "{\"angle\": 5}", "message": "5"}
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}

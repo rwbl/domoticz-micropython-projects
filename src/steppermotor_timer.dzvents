@@ -1,0 +1,91 @@
+--[[
+File:   steppermotor_timer.dzvents
+Date:   20230506
+Author: Robert W.B. Linn
+:description
+Turn the stepper motor stepwise in the direction clockwise or anticlockwise by using a Domoticz Selector Switch.
+The selector switch has 3 levels 0, 10, 20.
+The level 0, Off stops the stepper motor. Level 10 is Run Clockwise and level 20 is Run Anti-Clockwise.
+This means the selector switch shows two buttons Run Clockwise and Run Anti-Clockwise.
+:log
+2023-05-06 16:46:35.215 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (43/Stepper/Set Level)
+2023-05-06 16:46:35.313 Status: dzVents: Info: Handling events for: "Stepper", value: "Run Anti-Clockwise"
+2023-05-06 16:46:35.313 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Start internal script: steppermotor_timer: Device: "Stepper (VirtualSensors)", Index: 43
+2023-05-06 16:46:35.314 Status: dzVents: Info: LOG_STEPPERTIMER: device=Stepper, state=Run Anti-Clockwise, level=20
+2023-05-06 16:46:35.314 Status: dzVents: Info: LOG_STEPPERTIMER: {["direction"]=-1, ["command"]="run"}
+2023-05-06 16:46:35.314 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Finished steppermotor_timer
+2023-05-06 16:46:35.314 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 16:46:40.892 Status: User: admin (IP: NNN.NNN.NNN.94) initiated a switch command (43/Stepper/Set Level)
+2023-05-06 16:46:40.987 Status: dzVents: Info: Handling events for: "Stepper", value: "Stop"
+2023-05-06 16:46:40.988 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Start internal script: steppermotor_timer: Device: "Stepper (VirtualSensors)", Index: 43
+2023-05-06 16:46:40.988 Status: dzVents: Info: LOG_STEPPERTIMER: device=Stepper, state=Stop, level=0
+2023-05-06 16:46:40.988 Status: dzVents: Info: LOG_STEPPERTIMER: {["command"]="stop"}
+2023-05-06 16:46:40.988 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Finished steppermotor_timer
+2023-05-06 16:46:40.988 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 16:46:41.419 Status: dzVents: Info: Handling httpResponse-events for: "RES_STEPPERTIMER"
+2023-05-06 16:46:41.419 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Start internal script: steppermotor_timer: HTTPResponse: "RES_STEPPERTIMER"
+2023-05-06 16:46:41.420 Status: dzVents: Info: LOG_STEPPERTIMER: status=OK, title={'command': 'stop'}, message=stop
+2023-05-06 16:46:41.420 Status: dzVents: Info: LOG_STEPPERTIMER: ------ Finished steppermotor_timer 
+]]--
+-- Domoticz device Selector Switch
+local IDX_STEPPER_SELECTOR = 43
+-- Pico W web server IP address
+local HTTP_URL       = 'http://webserver-ip'
+-- HTTP_POST_DATA   = '{"angle":90}'
+-- Callback and logging
+local PROJECT       = 'STEPPERTIMER'
+local HTTP_RES      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+-- Post Data to the Pico W Webserver.
+-- The data is a JSON object with the command run or stop.
+local function HTTPPost(domoticz, data)
+    domoticz.log(data)
+    domoticz.openURL({
+        url = HTTP_URL,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = data,
+        callback = HTTP_RES,
+       }) 
+end
+return {
+    -- Listen to dimmer device changes and HTTP responses
+	on = { 
+	    devices = { IDX_STEPPER_SELECTOR }, 
+	    httpResponses = { HTTP_RES } 
+    },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+		    -- Check which device
+            if item.idx == IDX_STEPPER_SELECTOR then
+    		    domoticz.log(string.format("device=%s, state=%s, level=%d", item.name, item.state, item.level))
+                local data = {}
+                if item.level == 0 then
+                    data['command'] = 'stop'
+                end
+                if item.level == 10 then 
+                    data['command'] = 'run'
+                    data['direction'] = 1
+                end
+                if item.level == 20 then 
+                    data['command'] = 'run'
+                    data['direction'] = -1
+                end
+                HTTPPost(domoticz, data)
+            end
+        
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {"status": "OK", "title": "{\"angle\": 5}", "message": "5"}
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}

@@ -1,0 +1,101 @@
+--[[
+File:   stepperblind.dzvents
+Date:   20230506
+Author: Robert W.B. Linn
+:description
+Simulating a blind state Open or Closed by moving a stepper motor by angle 180 (Open) or -180 (Closed).
+:log
+2023-05-06 11:59:40.887 Status: User: admin initiated a switch command (42/Blind/Open)
+2023-05-06 11:59:40.992 Status: dzVents: Info: Handling events for: "Blind", value: "Open"
+2023-05-06 11:59:40.992 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Start internal script: stepperblind: Device: "Blind (VirtualSensors)", Index: 42
+2023-05-06 11:59:40.992 Status: dzVents: Info: LOG_STEPPERBLIND: device=Blind, state=Open, stateprev=Closed
+2023-05-06 11:59:40.992 Status: dzVents: Info: LOG_STEPPERBLIND: device=nil, angle=180
+2023-05-06 11:59:40.993 Status: dzVents: Info: LOG_STEPPERBLIND: {["angle"]=180}
+2023-05-06 11:59:40.993 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Finished stepperblind
+2023-05-06 11:59:40.994 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 11:59:43.488 Status: dzVents: Info: Handling httpResponse-events for: "RES_STEPPERBLIND"
+2023-05-06 11:59:43.488 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Start internal script: stepperblind: HTTPResponse: "RES_STEPPERBLIND"
+2023-05-06 11:59:43.488 Status: dzVents: Info: LOG_STEPPERBLIND: status=OK, title={'angle': 180}, message=180
+2023-05-06 11:59:43.489 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Finished stepperblind
+2023-05-06 11:59:45.102 Status: User: admin initiated a switch command (42/Blind/Close)
+2023-05-06 11:59:45.153 Status: dzVents: Info: Handling events for: "Blind", value: "Closed"
+2023-05-06 11:59:45.153 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Start internal script: stepperblind: Device: "Blind (VirtualSensors)", Index: 42
+2023-05-06 11:59:45.154 Status: dzVents: Info: LOG_STEPPERBLIND: device=Blind, state=Closed, stateprev=Open
+2023-05-06 11:59:45.154 Status: dzVents: Info: LOG_STEPPERBLIND: device=nil, angle=-180
+2023-05-06 11:59:45.154 Status: dzVents: Info: LOG_STEPPERBLIND: {["angle"]=-180}
+2023-05-06 11:59:45.155 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Finished stepperblind
+2023-05-06 11:59:45.155 Status: EventSystem: Script event triggered: /home/pi/domoticz/dzVents/runtime/dzVents.lua
+2023-05-06 11:59:47.634 Status: dzVents: Info: Handling httpResponse-events for: "RES_STEPPERBLIND"
+2023-05-06 11:59:47.634 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Start internal script: stepperblind: HTTPResponse: "RES_STEPPERBLIND"
+2023-05-06 11:59:47.635 Status: dzVents: Info: LOG_STEPPERBLIND: status=OK, title={'angle': -180}, message=-180
+2023-05-06 11:59:47.635 Status: dzVents: Info: LOG_STEPPERBLIND: ------ Finished stepperblind
+]]--
+-- Domoticz device from type light/switch, light, blinds
+local IDX_BLIND = 42
+-- Pico W web server IP address
+local HTTP_URL       = 'http://webserver-ip'
+-- HTTP_POST_DATA   = '{"angle":180}'
+-- Callback and logging
+local PROJECT       = 'STEPPERBLIND'
+local HTTP_RES      = 'RES_' .. PROJECT
+local LOG_MARKER    = 'LOG_' .. PROJECT
+-- Stepper
+local ANGLE_OPEN = 180
+local ANGLE_CLOSED = ANGLE_OPEN * -1
+local STATE_OPEN = 'Open'
+local STATE_CLOSED = 'Closed'
+-- Post Data to the Pico W Webserver.
+-- The data is a JSON object with the servo angle rounded: {"angle":NNN}
+local function HTTPPost(domoticz, angle)
+    local data = {}
+    data['angle'] = angle
+    domoticz.log(string.format('device=%s, angle=%d',domoticz.devices(IDX_SWITCH).name, angle), domoticz.LOG_INFO)
+    domoticz.log(data)
+    domoticz.openURL({
+        url = HTTP_URL,
+        method = 'POST',
+        headers = { ['content-type'] = 'application/json' },
+        postData = data,
+        callback = HTTP_RES,
+       }) 
+end
+-- Set the blind angle
+local function setblind(domoticz, state)
+    local angle = ANGLE_OPEN
+    if state == STATE_CLOSED then angle = ANGLE_CLOSED end
+    HTTPPost(domoticz, angle)
+end
+return {
+    -- Listen to dimmer device changes and HTTP responses
+	on = { 
+	    devices = { IDX_BLIND }, 
+	    httpResponses = { HTTP_RES } 
+    },
+    data = {
+        stateprev = {initial = STATE_OPEN},  
+    },
+	logging = { level = domoticz.LOG_INFO, marker = LOG_MARKER },
+	
+	execute = function(domoticz, item)
+        -- domoticz.log(item)
+		if (item.isDevice) then
+		    domoticz.log(string.format("device=%s, state=%s, stateprev=%s", item.name, item.state, domoticz.data.stateprev))
+		    -- Check if the state has changed i.e. Open to Closed or Closed to Open
+		    if item.state ~= domoticz.data.stateprev then
+    		    -- Set the blind state
+                setblind(domoticz, item.state)
+                -- Capture the new state
+                domoticz.data.stateprev = item.state
+	        end
+        end
+        if (item.isHTTPResponse) then
+            -- domoticz.log(item)
+            if (item.isJSON) then
+                -- {"status": "OK", "title": "{\"angle\": 90}", "message": "90"}
+                local data = item.json
+                domoticz.log(string.format("status=%s, title=%s, message=%s", data.status, data.title, data.message))
+            end
+        end
+		
+	end
+}
