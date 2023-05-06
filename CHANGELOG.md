@@ -1,5 +1,9 @@
 # domoticz-micropython-projects - CHANGELOG
 
+## 20230506
+* NEW: Project Stepper Motor - Selector Switch Angle Move, Blind Simulation, Timer Run Stop
+* UPD: Various minor changes.
+
 ## 20230427
 * NEW: Project Button Control MQTT Autodiscover.
 * NEW: Project DHT22 Temperature & Humidity MQTT Autodiscover.
