@@ -3,22 +3,29 @@ File: lcdtextinput.dzvents
 Date: 20230425
 Author: Robert W.B. Linn
 Based on this solution: https://www.domoticz.com/forum/viewtopic.php?p=293175#p293175 (Thanks)
+
 Create a Domoticz GUI input widget for text. The widget uses a text device.
 The text is sent to the Pico W web server and sets the text of up-to 4 lines (LCD rows 0-3).
+
 As the event is running on the Domoticz system, there is no need to add an IP address to the HTML form POST action.
-See below variable widgetinputnumberhtml.
+See below variable widgetinputhtml.
 ]]--
-local URL_SERVER      = 'http://webserver-ip'
+
+local URL_SERVER      = 'http://192.168.1.108'
+
 -- IDX of the switch which enables to init the textinput device
 local IDX_SWITCH = 16
+
 -- IDX of the text device which is functioning as an input device
 local IDX_TEXT_DEVICE = 36
 local INPUT_LABEL = "Text:"
 -- Optional store the text in a user var (NOT USED)
 local IDX_UV = 1
+
 local PROJECT       = 'LCDWIDGETINPUT'
 local RES_HTTP      = 'RES_' .. PROJECT
 local LOG_MARKER    = 'LOG_' .. PROJECT
+
 -- Create the HTML code for the text device containing input field.
 -- This is a form submitting a POST request on the localhost.
 -- The input field has type text. The label is commented out. The input field has default with 200px.
@@ -35,6 +42,7 @@ local widgetinputhtml = [[<!-- Widget Input for Text -->
 	<input type="text" id="fname" name="svalue" value="{VALUE}" style="width: 200px;"> 
     <input type="image" class="btnsmall" alt="Save">
 </form>]]
+
 -- Set the content of the text device.
 -- The content is HTML code (see previous var widgetinputhtml) with the value.
 -- Ensure to remove the newline characters.
@@ -48,6 +56,7 @@ local function setTextDevice(domoticz, value)
     -- Silent update of the text device to avoid triggering device change.
     domoticz.devices(IDX_TEXT_DEVICE).updateText(text).silent()
 end
+
 local function updateLCD(domoticz, text)
     local postdata = {}
     postdata['text'] = text
@@ -59,6 +68,7 @@ local function updateLCD(domoticz, text)
         callback = RES_HTTP,
        })     
 end
+
 return {
 	on = {
 		devices = { IDX_SWITCH, IDX_TEXT_DEVICE },
@@ -69,6 +79,7 @@ return {
 	},
 	-- Handle device changes
 	execute = function(domoticz, item)
+
         -- Handle switch which inits the text of the text device with html
         if item.isDevice then
             device = item 
