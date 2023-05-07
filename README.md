@@ -68,6 +68,7 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x Potentiometer.
 * 2x DS18B20 - 1-wire digital thermometers.
 * 1x 28BYJ-48 Stepper Motor with ULN2003 motor driver.
+
 and more …
 
 ## Credits
