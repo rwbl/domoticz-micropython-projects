@@ -41,7 +41,7 @@ The MCU acts as a
 
 The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this book the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 11 (bullseye).
 
-The Domoticz hardware and related devices are added, either manually via the “Dummy Hardware Controller” or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
+The Domoticz hardware and related devices are added, either manually via the "Dummy Hardware Controller" or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
 
 _Note_
 Whilst starting to write this book, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
@@ -52,11 +52,11 @@ The Domoticz editor (GUI > Setup > More Options > Events) is used to develop and
 
 In addition, Node-RED and MQTT broker mosquitto (with clients mosquitto_pub and mosquitto_sub) are running on the Raspberry Pi.
 
-The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.1 (build 15200 or higher) is set (at the time of writing).
+The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.1 (build 15234 or higher) is set (at the time of writing).
 
 ## Components
 * 1x Raspberry Pi Pico W 2022.
-* 1x Pico Breadboard Kit GeeekPi with LEDs (4 named LED1-4), Pushbuttons (4 named Button K1 - K4), Buzzer (not used for now).
+* 1x Pico Breadboard Kit GeeekPi with LEDs (LED1-4), Pushbuttons (Button K1 - K4), Buzzer (not used).
 * 1x Pico IO Shield KEYESTUDIO.
 * 1x DHT22 - Temperature & Humidity sensor.
 * 1x LCD 20x4 - LCD display (I2C) 20 columns & 4 rows.
@@ -66,10 +66,10 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x TM1638 LED&KEY - 8x 7-segment decimal LED component with 8x individual LEDs and 8x push buttons.
 * 1x PIR Motion Sensor.
 * 1x Potentiometer.
-* 2x DS18B20 - 1-wire digital thermometers.
+* 2x DS18B20 - 1-wire digital thermometer.
 * 1x 28BYJ-48 Stepper Motor with ULN2003 motor driver.
-
-and more …
+* 1x HC-SR04 Ultrasonic Distance Sensor.
+* 1x IKEA VINDRIKTNING Air Quality sensor.
 
 ## Credits
 **THANKS**, to the developers of the Raspberry Pi & ESP Microcontroller, Domoticz Home Automation System, MicroPython Language, Libraries & Tools and to all sharing related information. Without these, it would not be possible to write this document.
