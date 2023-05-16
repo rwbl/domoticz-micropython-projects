@@ -1,0 +1,40 @@
+--[[
+File:   ikeavindriktning-alert-sensor.dzvents
+Date:   20230516
+Author: Robert W.B. Linn
+:description
+Listen to air quality device changes to set the level & text of the air quality alert sensor.
+]]--
+-- Device IDXs
+local IDX_AIR_QUALITY = 46          -- Custom sensor
+local IDX_AIR_QUALITY_LEVEL = 48    -- Alert sensor
+-- Define the air quality levels.
+local air_quality_levels = {"GOOD", "MODERATE", "BAD", "UNKNOWN"}
+-- Update the alert sensor device
+-- Green GOOD: 0-35, Amber MODERATE: 36-85, Orange BAD: > 86.
+local function update_air_quality_level(domoticz, value)
+    value = tonumber(value)
+    local level = 4
+    if value >= 0 and value <= 35 then
+        level = 1
+    elseif value > 35 and value <= 85 then
+        level = 2
+    elseif value > 85 then
+        level = 3
+    end
+    -- local text = air_quality_levels[level]
+    local text = string.format('%s (%d ug/m3)', air_quality_levels[level], value)
+	domoticz.log(string.format(
+        'update_air_quality_level: value=%d, level=%d, text=%s',
+        value, level, text))
+    -- Update the alert sensor
+    domoticz.devices(IDX_AIR_QUALITY_LEVEL).updateAlertSensor(level, text)
+end
+return {
+    -- Listen to device changes of the air quality device.
+	on = { devices = { IDX_AIR_QUALITY } },
+	logging = { level = domoticz.LOG_INFO, marker = 'IKEAVINDRIKTNING', },
+	execute = function(domoticz, device)
+        update_air_quality_level(domoticz, device.state)
+	end
+}

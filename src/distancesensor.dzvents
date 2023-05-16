@@ -1,0 +1,36 @@
+--[[
+File:   distancesensor.dzvents
+Date:   20230512
+Author: Robert W.B. Linn
+:description
+Listen to distance device changes.
+If the distance is below a threshold then log as domoticz error.
+]]--
+-- Device IDX
+local IDX_DISTANCE = 44
+-- Define the distance threshold.
+-- For flexibility could use a user variable.
+local THRESHOLD = 20    -- cm
+return {
+  -- Listen to device changes of the distance device.
+	on = { devices = { IDX_DISTANCE } },
+	logging = { level = domoticz.LOG_INFO, marker = 'DISTANCESENSOR', },
+	execute = function(domoticz, device)
+	    -- domoticz.log(device)
+	    
+	    -- Log the device change.
+		domoticz.log(string.format(
+		    'Device %s has changed. New state %s',
+		    device.name, device.state))
+		
+		-- Check if distance below threshold using the device property distance.
+		local distance = device.distance
+        -- Log a warning with error level to make immediate visible.
+		if distance < THRESHOLD then
+		    -- 2023-05-12 10:53:38.046 Error: dzVents: Error: (3.1.8) IDX_DISTANCE: [WARNING] Distance 16.2 below threshold 20!
+    		domoticz.log(string.format(
+    		    '[WARNING] Distance %.1f below threshold %d!',
+    		    distance, THRESHOLD), domoticz.LOG_ERROR)
+        end
+	end
+}

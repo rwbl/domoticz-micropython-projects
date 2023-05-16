@@ -1,0 +1,61 @@
+--[[
+File:   ikeavindriktning-custom-event.dzvents
+Date:   20230516
+Author: Robert W.B. Linn
+:description
+Listen to custom event to set the air quality devices custom sensor value and level & text of the air quality alert sensor.
+]]--
+-- Custom event name as used by the PicoW webserver HTTP API/JSON POST request
+local CUSTOM_EVENT_NAME = 'airquality'
+-- Device IDXs
+local IDX_AIR_QUALITY = 46          -- Custom sensor
+local IDX_AIR_QUALITY_LEVEL = 48    -- Alert sensor
+-- Define the air quality levels.
+local air_quality_levels = {"GOOD", "MODERATE", "BAD", "UNKNOWN"}
+-- Get the air quality alert sensor level & text
+-- Green GOOD: 0-35, Amber MODERATE: 36-85, Orange BAD: > 86.
+local function air_quality_level_text(domoticz, value)
+    value = tonumber(value)
+    local level = 4
+    if value >= 0 and value <= 35 then
+        level = 1
+    elseif value > 35 and value <= 85 then
+        level = 2
+    elseif value > 85 then
+        level = 3
+    end
+    -- local text = air_quality_levels[level]
+    local text = string.format('%s (%d ug/m3)', air_quality_levels[level], value)
+	domoticz.log(string.format(
+        'update_air_quality_level: value=%d, level=%d, text=%s',
+        value, level, text))
+    data = {}
+    data['level'] = level
+    data['text'] = text
+    return data
+end
+return {
+	on = {
+	    customEvents = { CUSTOM_EVENT_NAME } 
+    },
+	logging = { 
+	    level = domoticz.LOG_INFO, marker = 'IKEAVINDRIKTNING', 
+    },
+	execute = function(domoticz, triggeredItem)
+		if (triggeredItem.isCustomEvent) then
+    		-- domoticz.log(triggeredItem.data)
+            -- Check the custom event name in case there are more custom events
+		    if (triggeredItem.trigger == CUSTOM_EVENT_NAME) then
+                -- Get the JSON object from the triggered item
+    			local event_data = triggeredItem.json
+                -- Log to check air quality value and level to be set
+    			domoticz.log(string.format('value=%d, level=%d', event_data.value, event_data.level))
+    			-- Update the custom sensor
+                domoticz.devices(IDX_AIR_QUALITY).updateCustomSensor(event_data.value)
+    		    -- Update the alert sensor
+                local alert_data = air_quality_level_text(domoticz, event_data.value)
+                domoticz.devices(IDX_AIR_QUALITY_LEVEL).updateAlertSensor(alert_data['level'], alert_data['text'])
+    		end
+		end
+	end
+}

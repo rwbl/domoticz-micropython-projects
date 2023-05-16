@@ -1,6 +1,6 @@
 """
 File:	config.py
-Date:	20230425
+Date:	20230511
 Author:	Robert W.B. Linn
 :description
 Constants for the MCU webserver.
@@ -15,6 +15,7 @@ from micropython import const
 # WIFI_PASSWORD   = const('password')
 # Domoticz IP + Port
 DOMOTICZ_IP		= const('domoticz-ip:port')
+DOMOTICZ_MQTT_IP	= const('domoticz-ip')
 # Pico W onboard LED
 PIN_LED_ONBOARD = const('LED')
 # Pico Breadboard Kit LEDs connected to GPnn (pin #nn)
