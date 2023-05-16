@@ -1,6 +1,6 @@
 """
 File:	server.py
-Date:	20230425
+Date:	20230509
 Author:	Robert W.B. Linn
 :description
 Class to manage the PicoW RESTful webserver.
@@ -63,7 +63,7 @@ Class Server
 class Server:
     # Constants
     NAME = 'Server'
-    VERSION = 'v20230425'
+    VERSION = 'v20230509'
     CRLF = chr(13) + chr(10)
     SPACE = chr(32)
     # Domoticz
@@ -166,8 +166,13 @@ class Server:
         Connect to the network using the class SSID and password.
         :param None
         :example
-            # Create network object
-            network = Server(config.WIFI_SSID, config.WIFI_PASSWORD)
+            # Create server object
+            server = Server(config.WIFI_SSID, config.WIFI_PASSWORD, DEBUG=True)
+            # Connect to the server and get the wlan (station) object
+            station = server.connect2()
+            # Do something and then disconnect
+            server.send_get_request(url)
+            station.disconnect()
         """
         try:
             wlan = network.WLAN(network.STA_IF)
@@ -189,6 +194,8 @@ class Server:
                 self.log(f'Network connected OK')
                 status = wlan.ifconfig()
                 self.log(f'Network IP ' + status[0] )
+            return wlan
+        
         except OSError as e:
             self.ledstatus.off()
             cl.close()
