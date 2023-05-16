@@ -1,6 +1,6 @@
 # domoticz-micropython-projects - CHANGELOG
 
-## 2023MMDD
+## 20230516
 * NEW: Project Distance Sensor HC-SR04 HTTP API/JSON.
 * NEW: Project Distance Sensor HC-SR04 MQTT Autodiscover.
 * NEW: Project IKEA VINDRIKTNING Air Quality sensor with several solutions.
