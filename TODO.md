@@ -1,5 +1,24 @@
 # domoticz-micropython-projects - TODO
 
+## FIX: BLE OpenMQTTGateway Data Workaround
+Find a way to read the environment data published instead the workaround using the name with data.
+###
+In progress.
+Changed the OMG setting "pubadvdata" to true.
+```
+home/OpenMQTTGateway/commands/MQTTtoBT/config -m '{"pubadvdata":true}'
+```
+The OMG shows the manufacturer data:
+```
+{"id":"28:CD:C1:09:05:98","mac_type":0,"adv_type":0,"name":"04623904064B","manufacturerdata":"feff04623904064b","rssi":-55}
+```
+Workaround will be replaced by using the key manufacturerdata containing the manufacturer id + environment data.
+
+## NEW: BLE Actors
+Connect two buttons and a PIR to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
+### Status
+Work in progress.
+
 ## NEW: RF433
 Send data to Domoticz RFXCom hardware device, via a cheap RF433 transmitter connected to a Pico W.
 The data to be assigned to a Domoticz RFXMeter device. The message send by the RF433 transmitter is in X10 format.
@@ -18,12 +37,7 @@ Communication between SHIM and Domoticz via mqtt messaging with mqtt autodiscove
 The SHIM could be a LEGO house (from LEGO City) , wooden house, makerbeam frame or meccano frame.
 THis project will also be used to learn how to create & maintain a single package with several classes to control SHIM.
 ### Status
-Work in progress using BLE communication (active mode).
-
-## NEW: BLE Actors
-Connect two buttons and a PIR to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
-### Status
-Work in progress.
+In progress using BLE communication (active mode).
 
 ## NEW: Optimize RAM usage for constants
 See [MicroPython for Microcontrollers](https://docs.micropython.org/en/latest/reference/constrained.html).
