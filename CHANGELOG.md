@@ -1,7 +1,7 @@
 # domoticz-micropython-projects - CHANGELOG
 
 ## 20231227
-* NEW: Project Bluetooth Low Energy Sensor MQTT Autodiscover
+* NEW: Project PICOES - Bluetooth Low Energy Environment Sensor publsihing to Domiticz using MQTT Autodiscover
 * UPD: Minor changes.
 
 ## 20230516
