@@ -17,6 +17,7 @@ It is expected to have basic knowledge of
 * Thonny Integrated Development Environment.
 * JavaScript Object Notation (JSON).
 * Message Queuing Telemetry Transport MQTT and MQTT Autodiscover.
+* Bluetooth Low Energy (BLE).
 
 ## Remarks
 * This is a working document = conceptual changes & new idea’s whilst progressing.
@@ -27,23 +28,22 @@ It is expected to have basic knowledge of
 * Sources included in this document - latest sources this GitHub repository folder _src_.
 
 ## Concept
-![image](https://user-images.githubusercontent.com/47274144/234501616-22edc8e4-43ed-4669-8625-d52e6e05d669.png)
-
+![image](https://github.com/rwbl/domoticz-micropython-projects/assets/47274144/54f97a7f-8c10-4699-bb8d-e1994dc028cf)
 The block diagram starts at the left with the MicroPython editor (Thonny) running on the development device (Notebook with Windows 11).
 
 Connected to the development device is a Microcontroller Unit (MCU) with external components (actuators & sensors).
 For the Pico W projects, the Pico Breadboard Kit or the Pico IO Shield is used. These are a rather handy boards, not only for experimenting but also for building prototypes.
 
-The MCU communicates with the Domoticz Test System via HTTP or MQTT.
+The MCU communicates with the Domoticz Test System via HTTP, Bluetooth Low Energy (BLE) or MQTT.
 The MCU acts as a
-*	Web Server by sending HTTP GET/POST requests to connected clients or receiving HTTP GET/POST requests from connected clients,
-*	MQTT Autodiscover Client by publishing device configuration or state messages and subscribing to state messages.
+•	Web Server by sending HTTP GET/POST requests to connected clients or receiving HTTP GET/POST requests from connected clients,
+•	MQTT Auto Discovery Client by publishing device configuration or state messages and subscribing to state messages,
+•	Bluetooth Low Energy (BLE) advertiser by sending messages to an OpenMQTTGateway, which publishes MQTT messages being converted by Node-RED flow to Domoticz MQTT Auto Discovery Message.
 
-The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this book the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 11 (bullseye).
+The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this book the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 12 (bookworm).
 
-The Domoticz hardware and related devices are added, either manually via the "Dummy Hardware Controller" or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
-
-_Note_
+The Domoticz hardware and related devices are added, either manually via the “Dummy Hardware Controller” or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
+Note
 Whilst starting to write this book, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
 
 The Automation events are developed in dzVents (Domoticz Easy Events).
@@ -52,12 +52,13 @@ The Domoticz editor (GUI > Setup > More Options > Events) is used to develop and
 
 In addition, Node-RED and MQTT broker mosquitto (with clients mosquitto_pub and mosquitto_sub) are running on the Raspberry Pi.
 
-The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.1 (build 15234 or higher) is set (at the time of writing).
+The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.2 (build 15760 or higher) is set (at the time of writing).
 
 ## Components
 * 1x Raspberry Pi Pico W 2022.
 * 1x Pico Breadboard Kit GeeekPi with LEDs (LED1-4), Pushbuttons (Button K1 - K4), Buzzer (not used).
 * 1x Pico IO Shield KEYESTUDIO.
+* 1x ESP32-WROOM-32 (OpenMQTTGateway).
 * 1x DHT22 - Temperature & Humidity sensor.
 * 1x LCD 20x4 - LCD display (I2C) 20 columns & 4 rows.
 * 1x TM1637 - 4-digit 7-segment LED display (I2C).
