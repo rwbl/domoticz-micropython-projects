@@ -20,6 +20,11 @@ THis project will also be used to learn how to create & maintain a single packag
 ### Status
 Work in progress using BLE communication (active mode).
 
+## NEW: BLE Actors
+Connect two buttons and a PIR to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
+### Status
+Work in progress.
+
 ## NEW: Optimize RAM usage for constants
 See [MicroPython for Microcontrollers](https://docs.micropython.org/en/latest/reference/constrained.html).
 ### Status
