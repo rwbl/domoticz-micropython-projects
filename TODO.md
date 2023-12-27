@@ -14,8 +14,8 @@ The OMG shows the manufacturer data:
 ```
 Workaround will be replaced by using the key manufacturerdata containing the manufacturer id + environment data.
 
-## NEW: BLE Actors
-Connect two buttons and a PIR to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
+## NEW: BLE Actuators
+Connect actuators, like button(s) or Motion Detector (PIR) to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
 ### Status
 Work in progress.
 
