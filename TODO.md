@@ -2,7 +2,7 @@
 
 ## FIX: BLE OpenMQTTGateway Data Workaround
 Find a way to read the environment data published instead the workaround using the name with data.
-###
+### Status
 In progress.
 Changed the OMG setting "pubadvdata" to true.
 ```
