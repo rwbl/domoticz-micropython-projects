@@ -18,19 +18,9 @@ Communication between SHIM and Domoticz via mqtt messaging with mqtt autodiscove
 The SHIM could be a LEGO house (from LEGO City) , wooden house, makerbeam frame or meccano frame.
 THis project will also be used to learn how to create & maintain a single package with several classes to control SHIM.
 ### Status
-Not started.
+Work in progress using BLE communication (active mode).
 
 ## NEW: Optimize RAM usage for constants
 See [MicroPython for Microcontrollers](https://docs.micropython.org/en/latest/reference/constrained.html).
-### Status
-Not started.
-
-## NEW: Raspberry Pi Debug Probe Device.
-Check out the new Raspberry Pi Debug Probe Device.
-### Status
-Not started.
-
-## NEW: MQTT-AD Domoticz Alert Sensor
-Create and update a Domoticz Alert Sensor. Not supported at time of writing (20230515)
 ### Status
 Not started.
