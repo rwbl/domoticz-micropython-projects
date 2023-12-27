@@ -1,5 +1,9 @@
 # domoticz-micropython-projects - CHANGELOG
 
+## 20231227
+* NEW: Project Bluetooth Low Energy Sensor MQTT Autodiscover
+* UPD: Minor changes.
+
 ## 20230516
 * NEW: Project Distance Sensor HC-SR04 HTTP API/JSON.
 * NEW: Project Distance Sensor HC-SR04 MQTT Autodiscover.
