@@ -4,7 +4,7 @@
 To explore how to use the MicroPython programming language running on embedded hardware interfacing with the Domoticz Home Automation System.
 
 The core of the projects uses the Raspberry Pi Pico W microcontroller, with components like actuators & sensors.
-The microcontroller is acting as a web server or MQTT Autodiscover client communicating with the Domoticz Home Automation System.
+The microcontroller is acting as a web server or MQTT Auto Discovery client communicating with the Domoticz Home Automation System.
 
 The intention is to provide some practical guidance, inspire ideas .. but not to explain Domoticz nor programming languages.
 
@@ -16,8 +16,9 @@ It is expected to have basic knowledge of
 * Raspberry Pi Pico / Pico W and ESP microcontrollers.
 * Thonny Integrated Development Environment.
 * JavaScript Object Notation (JSON).
-* Message Queuing Telemetry Transport MQTT and MQTT Autodiscover.
+* Message Queuing Telemetry Transport MQTT and MQTT Auto Discovery.
 * Bluetooth Low Energy (BLE).
+* Node-RED Low-code programming for event-driven applications.
 
 ## Remarks
 * This is a working document = conceptual changes & new idea’s whilst progressing.
@@ -44,7 +45,7 @@ The connected clients can be any client (like a Web Browser, Node-RED or Applica
 
 The Domoticz hardware and related devices are added, either manually via the “Dummy Hardware Controller” or automatic via the “MQTT Auto Discovery Client Gateway with LAN interface” depending on the requirements of the project as described in this book.
 Note
-Whilst starting to write this book, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Autodiscover feature.
+Whilst starting to write this book, most of the devices are virtual sensors assigned to the Dummy Hardware Controller, but also gradually start to use the (new) MQTT Auto Discovery feature.
 
 The Automation events are developed in dzVents (Domoticz Easy Events).
 Event scripting with dzVents is well integrated in Domoticz and good documentation with many examples is available.
@@ -52,7 +53,7 @@ The Domoticz editor (GUI > Setup > More Options > Events) is used to develop and
 
 In addition, Node-RED and MQTT broker mosquitto (with clients mosquitto_pub and mosquitto_sub) are running on the Raspberry Pi.
 
-The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2023.2 (build 15760 or higher) is set (at the time of writing).
+The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2024.1 (build 15810 or higher) is set (at the time of writing).
 
 ## Components
 * 1x Raspberry Pi Pico W 2022.
