@@ -13,11 +13,7 @@ The OMG shows the manufacturer data:
 {"id":"28:CD:C1:09:05:98","mac_type":0,"adv_type":0,"name":"04623904064B","manufacturerdata":"feff04623904064b","rssi":-55}
 ```
 Workaround will be replaced by using the key manufacturerdata containing the manufacturer id + environment data.
-
-## NEW: BLE Actuators
-Connect actuators, like button(s) or Motion Detector (PIR) to the Pico W and advertise via the OpenMQTTGateway using MQTT Auto Discovery to Domoticz.
-### Status
-Work in progress.
+See project BLE Actuators.
 
 ## NEW: RF433
 Send data to Domoticz RFXCom hardware device, via a cheap RF433 transmitter connected to a Pico W.
