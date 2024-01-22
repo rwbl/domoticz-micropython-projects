@@ -9,24 +9,24 @@ The microcontroller is acting as a web server or MQTT Auto Discovery client comm
 The intention is to provide some practical guidance, inspire ideas .. but not to explain Domoticz nor programming languages.
 
 ## Prerequisites
-It is expected to have basic knowledge of 
-• Domoticz Home Automation System.
-• Domoticz Automation Event system dzVents & Lua.
-• Programming languages Python and MicroPython.
-• Raspberry Pi Pico / Pico W and ESP microcontrollers.
-• Thonny Integrated Development Environment.
-• JavaScript Object Notation (JSON).
-• Message Queuing Telemetry Transport MQTT and MQTT Auto Discovery.
-• Bluetooth Low Energy (BLE).
-• Node-RED Low-code programming for event-driven applications.
+It is expected to have basic knowledge of
+* Domoticz Home Automation System.
+* Domoticz Automation Event system dzVents & Lua.
+* Programming languages Python and MicroPython.
+* Raspberry Pi Pico / Pico W and ESP microcontrollers.
+* Thonny Integrated Development Environment.
+* JavaScript Object Notation (JSON).
+* Message Queuing Telemetry Transport MQTT and MQTT Auto Discovery.
+* Bluetooth Low Energy (BLE).
+* Node-RED Low-code programming for event-driven applications.
 
 ## Remarks
-• This is a working document = conceptual changes & new idea’s whilst progressing.
-• There might be better solutions = changes depend on the author’s learning curve.
-• To-Do actions are tagged with [TODO].
-• Hard- and Software versions are subject to change.
-• Drawings are created with Fritzing.
-• Sources included in this document - latest sources this GitHub repository folder _src_.
+* This is a working document = conceptual changes & new idea’s whilst progressing.
+* There might be better solutions = changes depend on the author’s learning curve.
+* To-Do actions are tagged with [TODO].
+* Hard- and Software versions are subject to change.
+* Drawings are created with Fritzing.
+* Sources included in this document - latest sources this GitHub repository folder _src_.
 
 ## Concept
 ![image](https://github.com/rwbl/domoticz-micropython-projects/assets/47274144/54f97a7f-8c10-4699-bb8d-e1994dc028cf)
@@ -37,9 +37,9 @@ For the Pico W projects, the Pico Breadboard Kit or the Pico IO Shield is used. 
 
 The MCU communicates with the Domoticz Test System via HTTP, Bluetooth Low Energy (BLE) or MQTT.
 The MCU acts as a
-•	Web Server by sending HTTP GET/POST requests to connected clients or receiving HTTP GET/POST requests from connected clients,
-•	MQTT Auto Discovery Client by publishing device configuration or state messages and subscribing to state messages,
-•	Bluetooth Low Energy (BLE) advertiser by sending messages to an OpenMQTTGateway, which publishes MQTT messages being converted by Node-RED flow to Domoticz MQTT Auto Discovery Message.
+* Web Server by sending HTTP GET/POST requests to connected clients or receiving HTTP GET/POST requests from connected clients,
+* MQTT Auto Discovery Client by publishing device configuration or state messages and subscribing to state messages,
+* Bluetooth Low Energy (BLE) advertiser by sending messages to an OpenMQTTGateway, which publishes MQTT messages being converted by Node-RED flow to Domoticz MQTT Auto Discovery Message.
 
 The connected clients can be any client (like a Web Browser, Node-RED or Application), but for this book the client is a dedicated Domoticz Test System running on a Raspberry Pi 4B 4GB with Raspberry Pi OS version 12 (bookworm).
 
@@ -56,23 +56,23 @@ In addition, Node-RED and MQTT broker mosquitto (with clients mosquitto_pub and 
 The software is regularly updated to stay at the latest versions – for Domoticz the release channel Beta 2024.3 (build 15866) is used (at the time of writing).
 
 ## Components
-• 1x Raspberry Pi Pico W 2022.
-• 1x Pico Breadboard Kit GeeekPi with LEDs (LED1-4), Pushbuttons (Button K1 - K4), Buzzer (not used).
-• 1x Pico IO Shield KEYESTUDIO.
-• 1x ESP32-WROOM-32 (OpenMQTTGateway).
-• 1x DHT22 - Temperature & Humidity sensor.
-• 1x LCD 20x4 - LCD I2C display 20 columns x 4 rows.
-• 1x LCD 480x320 - LCD display 480x320 resolution (Waveshare Pico-ResTouch-LCD-3.5).
-• 1x TM1637 - 4-digit 7-segment LED display (I2C).
-• 1x Servo Motor - Tower Pro Micro Servo 9g SG90.
-• 1x RFID-RC522 - Reader for MIFARE RFID Cards and Tokens.
-• 1x TM1638 LED&KEY - 8x 7-segment decimal LED component with 8x individual LEDs and 8x push buttons.
-• 1x PIR Motion Sensor.
-• 1x Potentiometer.
-• 2x DS18B20 - 1-wire digital thermometer.
-• 1x 28BYJ-48 Stepper Motor with ULN2003 motor driver.
-• 1x HC-SR04 Ultrasonic Distance Sensor.
-• 1x IKEA VINDRIKTNING Air Quality sensor.
+* 1x Raspberry Pi Pico W 2022.
+* 1x Pico Breadboard Kit GeeekPi with LEDs (LED1-4), Pushbuttons (Button K1 - K4), Buzzer (not used).
+* 1x Pico IO Shield KEYESTUDIO.
+* 1x ESP32-WROOM-32 (OpenMQTTGateway).
+* 1x DHT22 - Temperature & Humidity sensor.
+* 1x LCD 20x4 - LCD I2C display 20 columns x 4 rows.
+* 1x LCD 480x320 - LCD display 480x320 resolution (Waveshare Pico-ResTouch-LCD-3.5).
+* 1x TM1637 - 4-digit 7-segment LED display (I2C).
+* 1x Servo Motor - Tower Pro Micro Servo 9g SG90.
+* 1x RFID-RC522 - Reader for MIFARE RFID Cards and Tokens.
+* 1x TM1638 LED&KEY - 8x 7-segment decimal LED component with 8x individual LEDs and 8x push buttons.
+* 1x PIR Motion Sensor.
+* 1x Potentiometer.
+* 2x DS18B20 - 1-wire digital thermometer.
+* 1x 28BYJ-48 Stepper Motor with ULN2003 motor driver.
+* 1x HC-SR04 Ultrasonic Distance Sensor.
+* 1x IKEA VINDRIKTNING Air Quality sensor.
 
 ## Credits
 **THANKS**, to the developers of the Raspberry Pi & ESP Microcontroller, Domoticz Home Automation System, MicroPython Language, Libraries & Tools and to all sharing related information. Without these, it would not be possible to write this document.
