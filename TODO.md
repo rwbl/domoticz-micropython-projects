@@ -40,8 +40,8 @@ See [MicroPython for Microcontrollers](https://docs.micropython.org/en/latest/re
 ### Status
 Not started.
 
-## NEW: Project LCD480x320
-Touch Support: Enable touch support instead external pushbuttons.
+## NEW: Project LCD480x320 Touch Support
+Enable touch support instead external pushbuttons.
 Touch support requires high memory, which is limited on the Raspberry Pi Pico (264kB of SRAM, 2MB of on-board flash memory).
 ### Status
 Wait for a new Raspberry Pi Pico with more memory.
