@@ -2,7 +2,7 @@
 
 ## 20240130
 * NEW: Project LCD114 - LCD display 1.14 inch 240x135 resolution + Joystick & User Keys acting as Domoticz Mini Controller for selective Domoticz devices.
-* UPD: Minor changes.
+* UPD: Appendix > Hints.
 
 ## 20240122
 * NEW: Project LCD480x320 - LCD display 3.5 inch 480x320 resolution showing selective Domoticz device data via Domoticz HTTP API/JSON.
