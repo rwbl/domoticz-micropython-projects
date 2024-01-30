@@ -1,7 +1,11 @@
 # domoticz-micropython-projects - CHANGELOG
 
+## 20240130
+* NEW: Project LCD114 - LCD display 1.14 inch 240x135 resolution + Joystick & User Keys acting as Domoticz Mini Controller for selective Domoticz devices.
+* UPD: Minor changes.
+
 ## 20240122
-* NEW: Project LCD480x320 - LCD 3.5-inch display with 480x320 resolution displaying selective Domoticz device data via Domoticz HTTP API/JSON.
+* NEW: Project LCD480x320 - LCD display 3.5 inch 480x320 resolution showing selective Domoticz device data via Domoticz HTTP API/JSON.
 * UPD: Minor changes.
 
 ## 20240108

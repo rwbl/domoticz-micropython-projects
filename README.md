@@ -61,8 +61,9 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x Pico IO Shield KEYESTUDIO.
 * 1x ESP32-WROOM-32 (OpenMQTTGateway).
 * 1x DHT22 - Temperature & Humidity sensor.
-* 1x LCD 20x4 - LCD I2C display 20 columns x 4 rows.
-* 1x LCD 480x320 - LCD display 480x320 resolution (Waveshare Pico-ResTouch-LCD-3.5).
+* 1x LCD display - I2C 20 columns x 4 rows.
+* 1x LCD display - 1.14 inch 240x135 resolution (Waveshare Pico-LCD-1.14).
+* 1x LCD display - 3.5 inch 480x320 resolution (Waveshare Pico-ResTouch-LCD-3.5).
 * 1x TM1637 - 4-digit 7-segment LED display (I2C).
 * 1x Servo Motor - Tower Pro Micro Servo 9g SG90.
 * 1x RFID-RC522 - Reader for MIFARE RFID Cards and Tokens.
