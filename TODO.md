@@ -44,6 +44,12 @@ Not started.
 Enable touch support instead external pushbuttons.
 Touch support requires high memory, which is limited on the Raspberry Pi Pico (264kB of SRAM, 2MB of on-board flash memory).
 ### Status
-Wait for a new Raspberry Pi Pico with more memory.
+Wait for a new Raspberry Pi Pico with more memory or consider using an Olimex.
 Not started.
+
+## NEW: Project ESP32CYD
+Many todos - see source domoticz-little-board.py in archive esp32cyd.zip (src folder).
+### Status
+In progress.
+
 
