@@ -1,7 +1,7 @@
 # domoticz-micropython-projects - CHANGELOG
 
 ## 20240210
-* NEW: Project ESP32CYD - ESP32 Cheap Yellow Display first prototype Domoticz Little Board.
+* NEW: Project ESP32CYD - ESP32 Cheap Yellow Display first prototype Domoticz Little Board 320x240 resolution.
   
 ## 20240130
 * NEW: Project LCD114 - LCD display 1.14 inch 240x135 resolution + Joystick & User Keys acting as Domoticz Mini Controller for selective Domoticz devices.
