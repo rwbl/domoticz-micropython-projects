@@ -75,7 +75,7 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x 28BYJ-48 Stepper Motor with ULN2003 motor driver.
 * 1x HC-SR04 Ultrasonic Distance Sensor.
 * 1x IKEA VINDRIKTNING Air Quality sensor.
-* 1x DIYmall ESP32 2.8" TFT Touch Screen Display ESP-32 WIFI BLE Dual Core
+* 1x OVNSHVN ESP32 2.8" TFT Touch Screen Display ESP-32 WIFI BLE Dual Core
 
 ## Credits
 **THANKS**, to the developers of the Raspberry Pi & ESP Microcontroller, Domoticz Home Automation System, MicroPython Language, Libraries & Tools and to all sharing related information. Without these, it would not be possible to write this document.
