@@ -82,5 +82,6 @@ The software is regularly updated to stay at the latest versions – for Domotic
 
 ## Licence
 GNU GENERAL PUBLIC LICENSE v3.0.
+
 The information shared for personal use only - use at your own risk (see LICENSE).
 
