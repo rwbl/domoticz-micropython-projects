@@ -14,7 +14,7 @@ It is expected to have basic knowledge of
 * Domoticz Home Automation System.
 * Domoticz Automation Event system dzVents & Lua.
 * Programming languages Python and MicroPython.
-* Raspberry Pi Pico / Pico W and ESP microcontrollers.
+* Raspberry Pi Pico / Pico W and ESP8266/ESP32 microcontrollers.
 * Thonny Integrated Development Environment.
 * JavaScript Object Notation (JSON).
 * Message Queuing Telemetry Transport MQTT and MQTT Auto Discovery.
@@ -60,7 +60,7 @@ The software is regularly updated to stay at the latest versions – for Domotic
 * 1x Raspberry Pi Pico W 2022.
 * 1x Pico Breadboard Kit GeeekPi with LEDs (LED1-4), Pushbuttons (Button K1 - K4), Buzzer (not used).
 * 1x Pico IO Shield KEYESTUDIO.
-* 1x ESP32-WROOM-32 (OpenMQTTGateway).
+* 1x ESP32-WROOM-32 (basic experiments, OpenMQTTGateway).
 * 1x DHT22 - Temperature & Humidity sensor.
 * 1x LCD display - I2C 20 columns x 4 rows.
 * 1x LCD display - 1.14 inch 240x135 resolution (Waveshare Pico-LCD-1.14).
