@@ -1,8 +1,8 @@
 # domoticz-micropython-projects - CHANGELOG
 
-## 20240213
+## 20240214
 * NEW: Project ESP32CYD - Folder demos demo_domoticz, demo_widget_non_controllable, demo_widget_controllable, demo_widget_progressbar. Folder widgets ledlabel, progressbar.
-* UPD: Project ESP32CYD - Improved network connectivity, widgets reworked with demo mode option, Touch handling sensitivity.
+* UPD: Project ESP32CYD - Improved network connectivity (but still not 100% stable), widgets enhanced with demo mode option, reworked installation chapter.
 
 ## 20240210
 * NEW: Project ESP32CYD - ESP32 Cheap Yellow Display first prototype Domoticz Little Board 320x240 resolution.
