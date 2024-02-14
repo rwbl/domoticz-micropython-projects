@@ -50,8 +50,9 @@ Not started.
 ## NEW: Project ESP32CYD
 Many todos - see TODO.md in archive esp32cyd.zip (src folder).
 
-Considering to develop a dedicated github project **HomeControlPanel** and not to pursue ESP32CYD further (just leave as experimental).
-**HomeControlPanel** to be made flexible controlling other home automation systems.
+Considering to develop this project as a dedicated github project **HomeControlPanel** and leave ESP32CYD as experimental.
+
+The **HomeControlPanel** to be made flexible by enabling controlling other Home Automation systems.
 ### Status
 In progress.
 
